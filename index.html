@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tariif defter</title>
+<meta name="description" content="Elle çizilmiş tarif sayfalarını seç, kendi tarif defterini oluştur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Caveat:wght@400..700&family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@400..700&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="proto-strip">Prototip · Sayfalardaki çizimler yer tutucu, gerçek sayfalar Procreate'ten gelecek</div>
+
+<header class="top">
+  <a class="logo" href="#" aria-label="tariif ana sayfa">
+    <span class="logo-word">tariif</span>
+    <span class="logo-sub">el çizimi tarif defteri</span>
+  </a>
+  <nav class="nav" aria-label="Ana menü">
+    <a href="#sayfalar">Sayfalar</a>
+    <a href="#nasil">Nasıl çalışır</a>
+    <a href="#defterim" class="nav-cart">Defterim <span class="count-pill" data-count>0</span></a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Procreate'te çizildi · el yazısıyla yazıldı</p>
+      <h1>Sayfa sayfa,<br><span class="h1-hand">senin</span> defterin.</h1>
+      <p class="lede">Her tarif ayrı bir sayfa olarak çiziliyor. Beğendiklerini seç, Türkçe ya da İngilizce al, istersen tarif kısmını boş bırak ve kendi el yazınla doldur.</p>
+      <div class="hero-cta">
+        <a class="btn btn-ink" href="#sayfalar">Defterini oluştur</a>
+        <a class="btn btn-line" href="#nasil">Nasıl çalışır?</a>
+      </div>
+    </div>
+
+    <div class="hero-stage" aria-hidden="true">
+      <div class="fan" id="heroFan"></div>
+      <p class="note note-a">bu sayfayı boş<br>bırakabilirsin</p>
+      <svg class="arrow arrow-a" viewBox="0 0 90 60"><path d="M4 8c22 2 52 10 74 40m0 0-14-4m14 4 1-14"/></svg>
+      <p class="note note-b">EN de var!</p>
+    </div>
+  </section>
+
+  <!-- STRIP -->
+  <div class="tape-row" aria-hidden="true">
+    <span>mercimek</span><span>pul biber</span><span>tereyağı</span><span>dereotu</span><span>irmik</span><span>kimyon</span><span>nane</span><span>sarımsaklı yoğurt</span>
+  </div>
+
+  <!-- HOW -->
+  <section class="how" id="nasil">
+    <div class="section-head">
+      <h2>Defter nasıl oluşuyor?</h2>
+      <p>Dört adım. Her sayfa tek tek basılıyor, sen hangi sırayı kurarsan defterin o sırayla ciltleniyor.</p>
+    </div>
+    <ol class="steps">
+      <li>
+        <span class="step-no">1</span>
+        <h3>Sayfalarını seç</h3>
+        <p>Çorbadan tatlıya, elle çizilmiş tarif sayfaları arasından istediklerini deftere ekle.</p>
+      </li>
+      <li>
+        <span class="step-no">2</span>
+        <h3>Dilini belirle</h3>
+        <p>Her sayfa için ayrı karar: <b>TR</b>, <b>EN</b> ya da <b>Boş</b>. Boş sayfada çizim kalır, tarif alanı senin.</p>
+      </li>
+      <li>
+        <span class="step-no">3</span>
+        <h3>Kapağını giydir</h3>
+        <p>Üç mürekkep renginden birini seç, kapağa adını ya da defterin adını yazdıralım.</p>
+      </li>
+      <li>
+        <span class="step-no">4</span>
+        <h3>Basılsın, ciltlensin</h3>
+        <p>Kalın, mat kağıda basılır; spiral ya da iplik dikiş ciltle kapına gelir.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- BUILDER -->
+  <section class="builder" id="sayfalar">
+    <div class="section-head">
+      <h2>Sayfalar</h2>
+      <p>Bir sayfaya dokun, iki sayfalık açılımını gör. Dil seçimini kartın altından yap.</p>
+    </div>
+
+    <div class="filters" role="toolbar" aria-label="Kategoriler" id="filters"></div>
+
+    <div class="builder-grid">
+      <div class="catalog" id="catalog"></div>
+
+      <aside class="book-panel" id="defterim" aria-label="Defterim">
+        <div class="panel-head">
+          <h2>Defterim</h2>
+          <span class="mono" id="pageTally">0 sayfa</span>
+        </div>
+
+        <div class="cover-preview" id="coverPreview">
+          <div class="cover-binding"></div>
+          <div class="cover-face">
+            <span class="cover-kicker">tarif defteri</span>
+            <span class="cover-name" id="coverName">Benim Mutfağım</span>
+            <span class="cover-mark">tariif</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="nameInput">Kapakta yazacak isim</label>
+          <input id="nameInput" type="text" maxlength="24" placeholder="Benim Mutfağım" autocomplete="off">
+        </div>
+
+        <fieldset class="field">
+          <legend>Kapak rengi</legend>
+          <div class="swatches" id="coverSwatches"></div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Cilt</legend>
+          <div class="seg seg-wide" id="bindingSeg"></div>
+        </fieldset>
+
+        <div class="field">
+          <span class="field-label">Sayfa sırası</span>
+          <ol class="page-list" id="pageList"></ol>
+          <p class="empty" id="emptyList" hidden>Henüz sayfa yok. Soldan bir tarif seçip <b>Ekle</b>'ye bas.</p>
+        </div>
+
+        <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+        <p class="hint" id="minHint"></p>
+
+        <dl class="sum">
+          <div><dt>Cilt</dt><dd id="sumBinding">—</dd></div>
+          <div><dt>Sayfalar</dt><dd id="sumPages">—</dd></div>
+          <div class="sum-total"><dt>Tahmini toplam</dt><dd id="sumTotal">—</dd></div>
+        </dl>
+        <button class="btn btn-ink btn-block" id="orderBtn" type="button">Siparişi hazırla</button>
+        <p class="order-msg" id="orderMsg" role="status"></p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- INSTAGRAM -->
+  <section class="studio">
+    <div class="section-head">
+      <h2>Çizim masasından</h2>
+      <p>Her sayfa önce Instagram'da eskiz olarak doğuyor. Sıradaki tarifi takipçiler seçiyor.</p>
+    </div>
+    <div class="studio-grid" id="studioGrid"></div>
+    <a class="btn btn-line" href="https://instagram.com/" target="_blank" rel="noopener">Instagram'da takip et</a>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span class="logo-word small">tariif</span>
+  <p>Her sayfa elle çizilir, her defter tek tek hazırlanır.</p>
+  <p class="mono">1 su bardağı ≈ 200 ml · 1 yemek kaşığı ≈ 15 ml · 1 çay kaşığı ≈ 5 ml</p>
+</footer>
+
+<!-- mobile bar -->
+<a class="mobile-bar" href="#defterim">
+  <span><b data-count>0</b> sayfa · <span id="mobileTotal">₺0</span></span>
+  <span>Defterim →</span>
+</a>
+
+<!-- spread preview -->
+<dialog class="spread-dialog" id="spread" aria-labelledby="spreadTitle">
+  <div class="spread-top">
+    <div class="seg" id="spreadLang" role="group" aria-label="Sayfa dili"></div>
+    <button class="icon-btn" id="closeSpread" type="button" aria-label="Kapat">×</button>
+  </div>
+  <div class="spread" id="spreadBody"></div>
+  <div class="spread-foot">
+    <button class="btn btn-ink" id="spreadAdd" type="button">Deftere ekle</button>
+  </div>
+</dialog>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
