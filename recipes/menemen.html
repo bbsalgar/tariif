@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menemen tarif sayfası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@400..700&family=Kalam:wght@400;700&family=Young+Serif&display=swap">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  /* Layout: a desk with the open notebook on it; controls sit above like tabs on a binder. */
+  .desk { background: var(--paper-2); min-height: 100vh; padding: 0 var(--gutter) var(--s-8); }
+  .desk-top {
+    max-width: 1280px; margin-inline: auto;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-4);
+    padding-block: var(--s-5);
+  }
+  .back { font: 400 1.6rem/1 var(--f-letter); color: var(--cobalt); text-decoration: none; }
+  .desk-title { margin: 0; font: 400 clamp(1.6rem, 3vw, 2.2rem)/1.1 var(--f-display); }
+  .controls { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+  .notebook {
+    max-width: 1280px; margin-inline: auto;
+    display: grid; gap: var(--s-5); justify-items: center;
+  }
+  .notebook svg {
+    display: block; width: 100%; height: auto;
+    box-shadow: 0 2px 2px rgba(42, 38, 35, .06), 0 30px 60px -30px rgba(42, 38, 35, .55);
+    border-radius: 3px;
+    background: #FBF8F1;
+  }
+  .notebook svg.mm-left, .notebook svg.mm-right { max-width: 640px; }
+  .about { max-width: 62ch; margin: var(--s-6) auto 0; color: var(--ink-soft); display: grid; gap: var(--s-3); }
+  .about p { margin: 0; }
+  .about b { color: var(--pen); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="desk">
+  <header class="desk-top">
+    <a class="back" href="../index.html">← tariif</a>
+    <h1 class="desk-title">No. 01 · Menemen</h1>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Sayfa dili" id="langSeg">
+        <button type="button" data-lang="tr" aria-pressed="true">TR</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="blank" aria-pressed="false">Boş</button>
+      </div>
+      <div class="seg" role="group" aria-label="Görünüm" id="viewSeg">
+        <button type="button" data-view="both" aria-pressed="true">İki sayfa</button>
+        <button type="button" data-view="pages" aria-pressed="false">Tek tek</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="notebook" id="notebook"></main>
+
+  <section class="about">
+    <p><b>İki sayfalık açılım.</b> Solda bakır sahanda menemen, yanında ekmek ve ince belli bardakta çay. Sağda her malzeme ayrı ayrı çizilmiş, altında el yazısıyla yapılışı.</p>
+    <p><b>Üç hali var.</b> Türkçe, İngilizce ya da boş. Boş sayfada çizimler kalır; malzeme ve tarif satırları senin el yazın için çizgili bırakılır.</p>
+    <p><b>Prototip.</b> Bu sayfa kodla boyandı. Gerçek defterde aynı düzen Procreate'te elle çizilecek.</p>
+  </section>
+</div>
+
+<script src="../assets/spreads/menemen.js"></script>
+<script>
+(function () {
+  TariifSpreads.base = "../";   // the baked painting lives in ../assets/spreads
+  var lang = "tr";
+  var view = window.matchMedia("(max-width: 760px)").matches ? "pages" : "both";
+  var book = document.getElementById("notebook");
+
+  function draw() {
+    book.innerHTML = view === "both"
+      ? TariifSpreads.render("menemen", lang, "both")
+      : TariifSpreads.render("menemen", lang, "left") + TariifSpreads.render("menemen", lang, "right");
+    document.querySelectorAll("#langSeg button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.lang === lang); });
+    document.querySelectorAll("#viewSeg button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.view === view); });
+  }
+  document.getElementById("langSeg").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-lang]"); if (!b) return;
+    lang = b.dataset.lang;
+    // switch language without repainting: the spread carries all three variants
+    book.querySelectorAll(".mm-spread").forEach(function (svg) { svg.setAttribute("data-lang", lang); });
+    document.querySelectorAll("#langSeg button").forEach(function (x) { x.setAttribute("aria-pressed", x.dataset.lang === lang); });
+  });
+  document.getElementById("viewSeg").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-view]"); if (!b) return;
+    view = b.dataset.view; draw();
+  });
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -20,6 +20,27 @@ assets/app.js       tarif verisi, defter oluşturucu, iki sayfalık önizleme
 2. `assets/app.js` içindeki `RECIPES` listesine yeni tarifi ekle (`id`, `tr`, `en`, `langs` …).
 3. `pageThumb` ve `spreadHTML` fonksiyonlarında `art(r.motif)` yerine `<img src="assets/pages/ID-DIL.png">` kullan.
 
+## Boyalı tarif sayfaları (spreads)
+
+İlk tam sayfa örneği: **No. 01 Menemen** (`recipes/menemen.html`). İki sayfalık açılım, TR / EN / Boş halleriyle.
+
+```
+assets/spreads/menemen.js          sayfanın çizimi (SVG suluboya + kalem) ve el yazısı metinler
+assets/spreads/menemen-paint.webp  boya katmanının hazır görseli; site bunun üstüne metni canlı yazar
+exports/bake-spread.js             boya katmanını görsele çevirir, baskı ve Instagram görsellerini üretir
+exports/menemen/                   2800×2000 açılımlar (TR/EN/Boş) ve 1080×1350 Instagram postları
+```
+
+Çizimi değiştirdikten sonra görselleri yeniden üret:
+
+```
+npm i -D playwright && npx playwright install chromium
+node exports/bake-spread.js menemen
+```
+
+Procreate sayfaları hazır olduğunda `menemen-paint.webp` yerine kendi dışa aktarımını koyman yeterli
+(1400×1000 oranında, 2800×2000 önerilir); metin katmanı üstünde çalışmaya devam eder.
+
 ## Sonraki adımlar
 
 - Gerçek ödeme / sipariş altyapısı (şu an seçim yalnızca tarayıcıda saklanıyor).

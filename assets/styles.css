@@ -571,6 +571,16 @@ main > section.scene { max-width: none; padding-inline: 0; }
   letter-spacing: .08em;
 }
 
+/* hand-painted pages (assets/spreads) take the whole sheet */
+.page--painted { padding: 0; display: block; background: #FBF8F1; }
+.page--painted .mm-spread { display: block; width: 100%; height: 100%; }
+.page-badge--float { position: absolute; right: 7%; top: 5.5%; }
+.fan .page, .g-card .page { will-change: transform; }
+.spread.spread--painted { display: block; background: #FBF8F1; }
+.spread--painted .mm-spread { display: block; width: 100%; height: auto; }
+.spread--painted .mm-left, .spread--painted .mm-right { display: none; }
+.spread-foot { gap: var(--s-3); }
+
 /* watercolour paintings: each pigment layer glazes over the one below it */
 .art { isolation: isolate; overflow: visible; }
 .art .wash { mix-blend-mode: multiply; opacity: .85; }
@@ -902,6 +912,9 @@ ol.hand-list li::before {
   .add-btn { margin-left: 0; }
   .card-meta { flex-direction: column; gap: .2rem; }
   .spread-dialog { padding: var(--s-3); }
+  .spread--painted .mm-both { display: none; }
+  .spread--painted .mm-left, .spread--painted .mm-right { display: block; }
+  .spread--painted .mm-right { border-top: 1px solid var(--rule); }
   .spread { grid-template-columns: minmax(0, 1fr); }
   .spread .page { min-height: 0; aspect-ratio: 5 / 7; }
   .spread .page + .page { box-shadow: inset 0 16px 20px -18px rgba(42, 38, 35, .35); }

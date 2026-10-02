@@ -252,7 +252,13 @@
   /* ------------------------------------------------------------------
      Rendering
   ------------------------------------------------------------------ */
+  var PAINTED = window.TariifSpreads || null;   // hand-painted spreads (assets/spreads/*.js)
+
   function pageThumb(r, lang) {
+    if (PAINTED && PAINTED.has(r.id)) {
+      return '<div class="page page--painted">' + PAINTED.render(r.id, lang, "left") +
+        '<span class="page-badge page-badge--float">' + LANG_LABEL[lang] + '</span></div>';
+    }
     var title = lang === "en" ? r.en : r.tr;
     var lines = "";
     for (var i = 0; i < 4; i++) lines += '<i style="width:' + [92, 74, 86, 58][i] + '%"></i>';
@@ -380,7 +386,7 @@
     var card = e.target.closest(".card");
     if (!card) return;
     var id = card.dataset.id;
-    var langBtn = e.target.closest("[data-lang]");
+    var langBtn = e.target.closest("button[data-lang]");
     if (langBtn && !langBtn.disabled) { setLang(id, langBtn.dataset.lang); refreshCard(id, '[data-lang="' + langBtn.dataset.lang + '"]'); return; }
     if (e.target.closest("[data-add]")) { toggle(id); refreshCard(id, "[data-add]"); return; }
     if (e.target.closest("[data-open]")) openSpread(id);
@@ -468,7 +474,14 @@
   function renderSpread() {
     var r = BY_ID[spreadId], lang = cardLang[spreadId];
     $("#spreadLang").innerHTML = segButtons(r, lang);
-    $("#spreadBody").innerHTML = spreadHTML(r, lang);
+    var body = $("#spreadBody");
+    var painted = PAINTED && PAINTED.has(r.id);
+    body.classList.toggle("spread--painted", !!painted);
+    body.innerHTML = painted
+      ? PAINTED.render(r.id, lang, "both") + PAINTED.render(r.id, lang, "left") + PAINTED.render(r.id, lang, "right")
+      : spreadHTML(r, lang);
+    $("#spreadFull").hidden = !painted;
+    if (painted) $("#spreadFull").href = "recipes/" + r.id + ".html";
     var inBook = indexOf(spreadId) > -1;
     var add = $("#spreadAdd");
     add.textContent = inBook ? "Defterden çıkar" : "Deftere ekle (" + LANG_LABEL[lang] + ")";
@@ -478,7 +491,7 @@
     if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
   }
   $("#spreadLang").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-lang]"); if (!b || b.disabled) return;
+    var b = e.target.closest("button[data-lang]"); if (!b || b.disabled) return;
     setLang(spreadId, b.dataset.lang); renderSpread(); refreshCard(spreadId);
     $('#spreadLang [data-lang="' + b.dataset.lang + '"]').focus();
   });
