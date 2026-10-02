@@ -476,10 +476,12 @@
     $("#spreadLang").innerHTML = segButtons(r, lang);
     var body = $("#spreadBody");
     var painted = PAINTED && PAINTED.has(r.id);
+    var single = painted && PAINTED.pages(r.id) === 1;
     body.classList.toggle("spread--painted", !!painted);
-    body.innerHTML = painted
-      ? PAINTED.render(r.id, lang, "both") + PAINTED.render(r.id, lang, "left") + PAINTED.render(r.id, lang, "right")
-      : spreadHTML(r, lang);
+    body.classList.toggle("spread--single", !!single);
+    body.innerHTML = !painted ? spreadHTML(r, lang)
+      : single ? PAINTED.render(r.id, lang, "both")
+      : PAINTED.render(r.id, lang, "both") + PAINTED.render(r.id, lang, "left") + PAINTED.render(r.id, lang, "right");
     $("#spreadFull").hidden = !painted;
     if (painted) $("#spreadFull").href = "recipes/" + r.id + ".html";
     var inBook = indexOf(spreadId) > -1;

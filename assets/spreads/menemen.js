@@ -1,7 +1,6 @@
-/* Illustrated two-page recipe spreads, painted in SVG to read like a Procreate watercolour page:
-   pigment glazes with pooled edges and paper grain (filters #mmA/#mmB), white paper left unpainted
-   for highlights (#mmS), loose fine-liner linework that doesn't quite sit on the paint (#mmPen),
-   and handwriting. One spread = viewBox 1400 × 1000, two 5:7 pages side by side.
+/* Hand-drawn recipe pages in SVG, made to read like a keepsake notebook filled in with colored pencil:
+   cream ruled paper, pencil strokes broken up by paper tooth (#cpF), a wobbly fine liner (#cpPen)
+   and handwriting on the lines. A spread is viewBox 1400 × 1000 (two 5:7 pages); a single page is 700 × 1000.
 
    TariifSpreads.install()                  adds the shared filters, gradients and styles once per document
    TariifSpreads.render(id, lang, view)      lang: "tr" | "en" | "blank"; view: "both" | "left" | "right"
@@ -12,7 +11,7 @@
 (function () {
   "use strict";
 
-  var INK = "#2E2A26", NOTE = "#2B579C", PAPER = "#FFFDF8", PAGE = "#FBF8F1";
+  var INK = "#2E2A26", NOTE = "#2B579C";
 
   /* ---------- drawing helpers ---------- */
   function rng(seed) {
@@ -65,26 +64,8 @@
     }).join("");
   }
 
-  // W: one watercolour glaze. H: paper left white. L: pen linework. T: handwriting.
-  function W(fill, inner, o, f) {
-    return '<g filter="url(#' + (f || "mmA") + ')" fill="' + fill + '" opacity="' + (o == null ? .88 : o) + '" style="mix-blend-mode:multiply">' + inner + "</g>";
-  }
-  function H(inner, o) { return '<g filter="url(#mmS)" fill="' + PAPER + '" opacity="' + (o == null ? 1 : o) + '">' + inner + "</g>"; }
-  function L(inner, w, o, color, dash) {
-    return '<g filter="url(#mmPen)" fill="none" stroke="' + (color || INK) + '" stroke-width="' + (w || 2.2) + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + (o == null ? .9 : o) + '"' +
-      (dash ? ' stroke-dasharray="' + dash + '"' : "") + ">" + inner + "</g>";
-  }
-  function T(x, y, text, size, opts) {
-    opts = opts || {};
-    var rot = opts.rot || 0;
-    return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" class="' + (opts.cls || "mm-hand") + '"' +
-      (opts.anchor ? ' text-anchor="' + opts.anchor + '"' : "") +
-      (opts.fill ? ' fill="' + opts.fill + '"' : "") +
-      (rot ? ' transform="rotate(' + rot + " " + x + " " + y + ')"' : "") + ">" + text + "</text>";
-  }
   // language layers: shown only for the listed variants
   function only(langs, inner) { return '<g class="' + langs.split(" ").map(function (l) { return "l-" + l; }).join(" ") + '">' + inner + "</g>"; }
-  function ruled(x1, x2, y, o) { return L('<path d="M' + x1 + " " + y + "C" + (x1 + (x2 - x1) * .3) + " " + (y + 1.5) + " " + (x1 + (x2 - x1) * .7) + " " + (y - 1.5) + " " + x2 + " " + y + '"/>', 1.4, o == null ? .35 : o); }
 
   /* ---------- shared defs, installed once per document ---------- */
   var DEFS =
@@ -94,51 +75,12 @@
       ".mm-brush{font-family:'Caveat Brush',Kalam,'Segoe Print',cursive;fill:" + INK + "}" +
       ".mm-small{font-family:Figtree,system-ui,sans-serif;font-weight:600;letter-spacing:.16em;fill:#857B72}" +
       ".mm-note{fill:" + NOTE + "}" +
+      ".mm-serif{font-family:'Young Serif',Georgia,serif;font-style:italic;fill:#8A7D72}" +
+      ".mm-red{fill:#C8372D}" +
       ".mm-spread[data-lang=tr] .l-tr-hide,.mm-spread[data-lang=tr] .l-en:not(.l-tr),.mm-spread[data-lang=tr] .l-blank:not(.l-tr)," +
       ".mm-spread[data-lang=en] .l-tr:not(.l-en),.mm-spread[data-lang=en] .l-blank:not(.l-en)," +
       ".mm-spread[data-lang=blank] .l-tr:not(.l-blank),.mm-spread[data-lang=blank] .l-en:not(.l-blank){display:none}" +
     "</style>" +
-    '<filter id="mmA" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="3" seed="3" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G" result="s"/>' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.007" numOctaves="2" seed="14" result="b"/>' +
-      '<feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.25 .3" result="bm"/>' +
-      '<feComposite in="s" in2="bm" operator="in" result="w"/>' +
-      '<feMorphology in="s" operator="erode" radius="2" result="i"/>' +
-      '<feComposite in="s" in2="i" operator="out" result="rim"/>' +
-      '<feGaussianBlur in="rim" stdDeviation="1" result="rs"/>' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="2" seed="7" result="g"/>' +
-      '<feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.5 1.12" result="gm"/>' +
-      '<feMerge result="p"><feMergeNode in="w"/><feMergeNode in="rs"/></feMerge>' +
-      '<feComposite in="p" in2="gm" operator="in"/>' +
-    "</filter>" +
-    '<filter id="mmB" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="27" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="G" yChannelSelector="R" result="s"/>' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="2" seed="41" result="b"/>' +
-      '<feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.2 .35" result="bm"/>' +
-      '<feComposite in="s" in2="bm" operator="in" result="w"/>' +
-      '<feMorphology in="s" operator="erode" radius="1.4" result="i"/>' +
-      '<feComposite in="s" in2="i" operator="out" result="rim"/>' +
-      '<feGaussianBlur in="rim" stdDeviation=".7" result="rs"/>' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="19" result="g"/>' +
-      '<feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.5 1.12" result="gm"/>' +
-      '<feMerge result="p"><feMergeNode in="w"/><feMergeNode in="rs"/></feMerge>' +
-      '<feComposite in="p" in2="gm" operator="in"/>' +
-    "</filter>" +
-    '<filter id="mmS" x="-25%" y="-25%" width="150%" height="150%">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="5" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="s"/>' +
-      '<feGaussianBlur in="s" stdDeviation=".6"/>' +
-    "</filter>" +
-    '<filter id="mmPen" x="-10%" y="-10%" width="120%" height="120%">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="8" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>' +
-    "</filter>" +
-    '<filter id="mmText" x="-5%" y="-20%" width="110%" height="140%">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="1" seed="2" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G"/>' +
-    "</filter>" +
     '<filter id="mmPaper" x="0" y="0" width="100%" height="100%">' +
       '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="11" result="fine"/>' +
       '<feColorMatrix in="fine" type="matrix" values="0 0 0 0 .45  0 0 0 0 .40  0 0 0 0 .34  0 0 0 .10 0" result="f"/>' +
@@ -146,19 +88,33 @@
       '<feColorMatrix in="tooth" type="matrix" values="0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .38  0 0 0 .07 -.01" result="t"/>' +
       '<feMerge><feMergeNode in="t"/><feMergeNode in="f"/></feMerge>' +
     "</filter>" +
-    '<radialGradient id="mmCopper" cx=".38" cy=".34" r=".78"><stop offset="0" stop-color="#EDAA76"/><stop offset=".55" stop-color="#CC7642"/><stop offset="1" stop-color="#97492A"/></radialGradient>' +
-    '<linearGradient id="mmRimShade" x1="0" y1="0" x2="1" y2="1"><stop offset=".35" stop-color="#7E3A1F" stop-opacity="0"/><stop offset="1" stop-color="#7E3A1F"/></linearGradient>' +
-    '<radialGradient id="mmSauce" cx=".5" cy=".45" r=".62"><stop offset="0" stop-color="#F27E4C"/><stop offset=".6" stop-color="#DF5137"/><stop offset="1" stop-color="#B3302A"/></radialGradient>' +
-    '<radialGradient id="mmYolk" cx=".4" cy=".36" r=".66"><stop offset="0" stop-color="#FFDB5C"/><stop offset=".7" stop-color="#F8B42A"/><stop offset="1" stop-color="#E88B1B"/></radialGradient>' +
-    '<linearGradient id="mmPepper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9D77B"/><stop offset=".6" stop-color="#7EAB4B"/><stop offset="1" stop-color="#4E7C33"/></linearGradient>' +
-    '<radialGradient id="mmTomato" cx=".36" cy=".34" r=".72"><stop offset="0" stop-color="#F4775A"/><stop offset=".62" stop-color="#DA3D2F"/><stop offset="1" stop-color="#A62424"/></radialGradient>' +
-    '<linearGradient id="mmCrust" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9F5B27"/><stop offset="1" stop-color="#CC944E"/></linearGradient>' +
-    '<radialGradient id="mmCrumb" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#FCF1D6"/><stop offset="1" stop-color="#EAD09C"/></radialGradient>' +
-    '<linearGradient id="mmTea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DC6A3C"/><stop offset="1" stop-color="#8A2912"/></linearGradient>' +
-    '<radialGradient id="mmShell" cx=".34" cy=".3" r=".82"><stop offset="0" stop-color="#FCF3E0"/><stop offset="1" stop-color="#E0C9A0"/></radialGradient>' +
-    '<radialGradient id="mmBrownEgg" cx=".34" cy=".3" r=".82"><stop offset="0" stop-color="#F2D3A8"/><stop offset="1" stop-color="#C68A57"/></radialGradient>' +
-    '<radialGradient id="mmOnion" cx=".4" cy=".46" r=".7"><stop offset="0" stop-color="#E9A9C0"/><stop offset=".6" stop-color="#BA5A81"/><stop offset="1" stop-color="#7C3057"/></radialGradient>' +
-    '<linearGradient id="mmGutter" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5A4632" stop-opacity="0"/><stop offset=".5" stop-color="#5A4632" stop-opacity=".14"/><stop offset="1" stop-color="#5A4632" stop-opacity="0"/></linearGradient>' +
+    '<filter id="cpF" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" result="s"/>' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="9" result="t"/>' +
+      '<feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2 1.8" result="tm"/>' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="21" result="p"/>' +
+      '<feColorMatrix in="p" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.5 .1" result="pm"/>' +
+      '<feComposite in="tm" in2="pm" operator="arithmetic" k1="1" result="mask"/>' +
+      '<feComposite in="s" in2="mask" operator="in"/>' +
+    "</filter>" +
+    '<filter id="cpE" x="-15%" y="-15%" width="130%" height="130%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="6" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>' +
+    "</filter>" +
+    '<filter id="cpPen" x="-10%" y="-10%" width="120%" height="120%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="12" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>' +
+    "</filter>" +
+    '<filter id="cpWob" x="0" y="0" width="100%" height="100%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="31" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>' +
+    "</filter>" +
+    '<pattern id="cpH1" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="2.3" height="4.2" fill="#fff"/></pattern>' +
+    '<pattern id="cpH2" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(-50)"><rect width="1.7" height="3.6" fill="#fff"/></pattern>' +
+    '<mask id="cpM1" maskUnits="userSpaceOnUse" x="0" y="0" width="1400" height="1000"><rect width="1400" height="1000" fill="url(#cpH1)" filter="url(#cpWob)"/></mask>' +
+    '<mask id="cpM2" maskUnits="userSpaceOnUse" x="0" y="0" width="1400" height="1000"><rect width="1400" height="1000" fill="url(#cpH2)" filter="url(#cpWob)"/></mask>' +
+    '<linearGradient id="cpBind" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5A4632" stop-opacity=".22"/><stop offset="1" stop-color="#5A4632" stop-opacity="0"/></linearGradient>' +
     "</svg>";
 
   function install() {
@@ -168,265 +124,291 @@
     document.body.insertBefore(holder.firstChild, document.body.firstChild);
   }
 
-  /* ---------- menemen ---------- */
-  function menemen() {
-    var s = "", o = "";   // s: the painting (can be baked to an image), o: text and language-dependent marks
+  /* ---------- colored-pencil kit ----------
+     A fill is two passes of the same colour: a light even layer, then diagonal strokes (hatch mask),
+     both broken up by paper tooth (#cpF). Shading crosses the strokes the other way (#cpM2).
+     Outlines are a fine liner that wobbles (#cpPen), sometimes gone over twice. */
+  var PEN = "#2B2522", RED = "#C8372D", SHEET = "#F8F1DF";
+  function PF(color, inner, o, base) {
+    return '<g filter="url(#cpF)" opacity="' + (o == null ? .95 : o) + '" style="mix-blend-mode:multiply">' +
+      '<g fill="' + color + '" opacity="' + (base == null ? .6 : base) + '">' + inner + "</g>" +
+      '<g fill="' + color + '" mask="url(#cpM1)">' + inner + "</g></g>";
+  }
+  function PS(color, inner, o) {
+    return '<g filter="url(#cpF)" opacity="' + (o == null ? .9 : o) + '" style="mix-blend-mode:multiply"><g fill="' + color + '" mask="url(#cpM2)">' + inner + "</g></g>";
+  }
+  function PD(color, inner, o) {   // tiny marks: no stroke texture, just pressure and grain
+    return '<g filter="url(#cpF)" fill="' + color + '" opacity="' + (o == null ? .9 : o) + '" style="mix-blend-mode:multiply">' + inner + "</g>";
+  }
+  function PE(inner, o) { return '<g filter="url(#cpE)" fill="' + SHEET + '" opacity="' + (o == null ? 1 : o) + '">' + inner + "</g>"; }
+  function OL(inner, w, o, color, dash) {
+    return '<g filter="url(#cpPen)" fill="none" stroke="' + (color || PEN) + '" stroke-width="' + (w || 1.6) + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + (o == null ? .92 : o) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : "") + ">" + inner + "</g>";
+  }
+  function OL2(inner, w, o, color) {   // gone over twice, the second pass a little off
+    return OL(inner, w, o, color) + '<g transform="translate(.9 .7)">' + OL(inner, (w || 1.6) * .7, (o == null ? .92 : o) * .45, color) + "</g>";
+  }
+  function P(d, extra) { return '<path d="' + d + '"' + (extra || "") + "/>"; }
+  function at(d, x, y, s, r) { return '<path d="' + d + '" transform="translate(' + x + " " + y + ") rotate(" + (r || 0) + ") scale(" + (s || 1) + ')"/>'; }
 
-    // paper, gutter shadow, page edge
-    s += '<rect width="1400" height="1000" fill="' + PAGE + '"/>';
-    s += '<rect width="1400" height="1000" filter="url(#mmPaper)"/>';
-    s += '<rect x="590" width="220" height="1000" fill="url(#mmGutter)"/>';
-    s += '<path d="M700 0V1000" stroke="#5A4632" stroke-opacity=".08" stroke-width="1.5"/>';
+  // handwriting: every line sits on the ruled line but leans and drifts a little
+  var jit = rng(77);
+  function HW(x, y, text, size, opts) {
+    opts = opts || {};
+    var r = (jit() - .5) * (opts.lean == null ? 1.4 : opts.lean), dx = (jit() - .5) * 3, dy = (jit() - .5) * 1.6;
+    return '<text x="' + n1(x + dx) + '" y="' + n1(y + dy) + '" font-size="' + size + '" class="' + (opts.cls || "mm-hand") + '"' +
+      (opts.weight ? ' font-weight="' + opts.weight + '"' : "") +
+      (opts.anchor ? ' text-anchor="' + opts.anchor + '"' : "") +
+      (opts.ls ? ' letter-spacing="' + opts.ls + '"' : "") +
+      ' transform="rotate(' + n1(r) + " " + x + " " + y + ')">' + text + "</text>";
+  }
 
-    /* ===== LEFT PAGE: title + the finished dish ===== */
-    o += '<g>';
-    o += only("tr blank", T(72, 82, "NO. 01", 17, { cls: "mm-small" }) + T(628, 82, "KAHVALTI", 17, { cls: "mm-small", anchor: "end" }));
-    o += only("en", T(72, 82, "NO. 01", 17, { cls: "mm-small" }) + T(628, 82, "BREAKFAST", 17, { cls: "mm-small", anchor: "end" }));
-    o += "</g>";
+  var LINE0 = 92, GAP = 30;            // ruled lines: y = 92 + 30k
+  function ly(k) { return LINE0 + GAP * k; }
 
-    // title with a yellow wash under it
-    o += W("#F2C14E", blob(250, 182, 178, 24, 5, .14, 12, -3), .5, "mmB");
-    o += '<g>' + T(74, 202, "Menemen", 136, { cls: "mm-brush", rot: -3 }) + "</g>";
-    o += '<g>';
-    o += only("tr", T(92, 262, "2 kişilik · 20 dakika", 32, { rot: -2 }));
-    o += only("en", T(92, 262, "Turkish scrambled eggs · serves 2", 30, { rot: -2 }));
-    o += only("blank", T(92, 262, "kimden:", 30, { rot: -2 }));
-    o += "</g>";
-    o += only("blank", ruled(200, 420, 258, .4));
+  var LEAF = "M0 0C-4 -6 -12 -8 -16 -3C-21 -9 -17 -19 -9 -18C-11 -27 -1 -31 4 -24C10 -30 20 -24 16 -16C24 -14 23 -4 15 -3C11 -9 5 -7 0 0Z";
+  var VEIN = "M0 0L-9 -10M0 0L2 -20M0 0L11 -11";
+  var BASIL = "M0 0C-8 -6 -9 -18 0 -26C9 -18 8 -6 0 0Z";
 
-    // little splatters, the way a loaded brush leaves them
-    s += W("#D94A35", dots(7, 560, 400, 50, 26, 301, 2, 5.5), .55, "mmB");
-    s += W("#6A9A4A", dots(4, 150, 730, 40, 18, 302, 2, 4), .5, "mmB");
+  /* ---------- No. 01 Menemen, one page in the style of a hand-drawn keepsake recipe notebook ---------- */
+  function menemenPage() {
+    var s = "", o = "";
 
-    // the copper sahan
-    var cx = 350, cy = 582;
-    s += W("#8C8278", blob(cx + 22, cy + 32, 224, 178, 11, .05, 14), .2, "mmB");                       // shadow on the table
-    s += W("url(#mmCopper)", blob(126, 566, 46, 21, 21, .08, 10, -6) + blob(576, 560, 46, 21, 22, .08, 10, 6), .9);
-    s += W("url(#mmCopper)", blob(cx, cy, 206, 170, 31, .03, 16), .92);
-    s += W("url(#mmRimShade)", ring([cx, cy, 206, 170], [cx, cy + 10, 174, 140]), .55, "mmB");
-    s += W("#A65A33", ring([cx, cy, 183, 151], [cx, cy + 10, 173, 139]), .75, "mmB");                   // far inner wall
-    s += H(blob(cx, cy + 10, 172, 138, 41, .02, 16));                                                // keep the food area clean
-    s += W("url(#mmSauce)", blob(cx, cy + 10, 170, 136, 42, .04, 16), .93);
-    s += W("#B52F27", blob(262, 642, 48, 30, 43, .3, 8) + blob(442, 540, 40, 26, 44, .3, 8) + blob(472, 652, 36, 22, 45, .3, 8) + blob(300, 522, 30, 18, 46, .3, 8), .5, "mmB");
-    s += W("#F59A4E", blob(cx, 604, 92, 58, 47, .25, 10) + blob(228, 582, 30, 24, 48, .3, 8), .42);
-    s += H(blob(250, 562, 11, 5, 51, .2, 6, -20) + blob(396, 652, 13, 5, 52, .2, 6, 10) + blob(458, 590, 9, 4, 53, .2, 6, 0) + blob(312, 622, 7, 3, 54, .2, 6, 30), .85);
+    // cream ruled notebook page, bound on the left
+    s += '<rect width="700" height="1000" fill="' + SHEET + '"/>';
+    s += '<rect width="700" height="1000" filter="url(#mmPaper)"/>';
+    var ruled = "";
+    for (var k = 0; k <= 29; k++) ruled += "M34 " + ly(k) + "H666";
+    s += '<path d="' + ruled + '" stroke="#AFBBC8" stroke-opacity=".55" stroke-width="1"/>';
+    s += '<rect width="44" height="1000" fill="url(#cpBind)"/>';
 
-    // peppers in the pan
-    var strips = [[226, 530, 32, 9, -30], [374, 520, 34, 9, 15], [482, 612, 30, 8, 70], [252, 690, 28, 8, 20], [412, 702, 30, 8, -15], [354, 612, 24, 7, 40], [196, 628, 22, 7, 80]];
-    s += W("url(#mmPepper)", strips.map(function (p, i) { return blob(p[0], p[1], p[2], p[3], 71 + i, .12, 8, p[4]); }).join(""), .92);
-    s += W("#3F6E2A", strips.map(function (p, i) { return blob(p[0] + 3, p[1] + 3, p[2] * .7, p[3] * .45, 171 + i, .2, 7, p[4]); }).join(""), .35, "mmB");
-
-    // eggs
-    var eggs = [[282, 548, 64, 50, 61], [428, 606, 60, 48, 62], [318, 668, 56, 42, 63]];
-    s += H(eggs.map(function (e) { return blob(e[0], e[1], e[2], e[3], e[4], .16, 11); }).join(""));
-    s += W("#F5E9CF", eggs.map(function (e) { return blob(e[0], e[1], e[2], e[3], e[4], .16, 11); }).join(""), .55, "mmB");
-    s += W("#AEB7C4", eggs.map(function (e) { return blob(e[0] + 14, e[1] + 12, e[2] * .68, e[3] * .5, e[4] + 100, .2, 9); }).join(""), .32, "mmB");
-    s += W("url(#mmYolk)", eggs.map(function (e) { return blob(e[0] + 4, e[1] - 2, 25, 23, e[4] + 200, .05, 10); }).join(""), .96);
-    s += W("#E07B14", eggs.map(function (e) { return blob(e[0] + 11, e[1] + 6, 17, 11, e[4] + 300, .2, 8, 20); }).join(""), .35, "mmB");
-    s += H(eggs.map(function (e) { return blob(e[0] - 6, e[1] - 11, 7, 4, e[4] + 400, .2, 7, -25); }).join(""), .95);
-    s += W("#F9D77A", blob(372, 560, 14, 9, 81, .3, 7) + blob(238, 622, 13, 8, 82, .3, 7) + blob(474, 558, 12, 8, 83, .3, 7) + blob(392, 690, 13, 8, 84, .3, 7), .7);
-
-    // parsley and pul biber
-    s += W("#4F8A35", leaves(22, cx, 596, 150, 112, 91, 6.5), .85, "mmB");
-    s += W("#8E1E12", dots(46, cx, 598, 152, 116, 92, 1.4, 3), .8, "mmB");
-
-    // pen linework, deliberately a little off the paint
-    var eggLines = eggs.map(function (e) { return '<path d="' + blobD(e[0] + 2, e[1] - 2, e[2], e[3], e[4], .16, 11) + '"/>'; }).join("");
-    var yolkLines = eggs.map(function (e) { return '<circle cx="' + (e[0] + 5) + '" cy="' + (e[1] - 4) + '" r="24"/>'; }).join("");
-    s += L('<path d="' + ellD(cx + 3, cy - 4, 205, 169) + '"/><path d="' + ellD(cx + 1, cy + 5, 181, 149) + '"/>' +
-      '<path d="' + blobD(124, 563, 46, 20, 23, .06, 10, -6) + '"/><path d="' + blobD(578, 557, 46, 20, 24, .06, 10, 6) + '"/>' +
-      '<circle cx="150" cy="560" r="3"/><circle cx="158" cy="574" r="3"/><circle cx="550" cy="554" r="3"/><circle cx="542" cy="568" r="3"/>', 2.3, .85);
-    s += L(eggLines, 1.8, .7, null, "70 16 34 12");
-    s += L(yolkLines, 1.6, .65, null, "50 14 40 20");
-    s += L(strips.slice(0, 4).map(function (p, i) { return '<path d="' + blobD(p[0] + 1, p[1] - 1, p[2], p[3], 71 + i, .12, 8, p[4]) + '"/>'; }).join(""), 1.5, .6, null, "30 8");
-    s += L('<path d="M470 700q8-5 14 0M500 660q7-6 12 1M520 610q6-6 11 0M432 736q8-4 14 1M246 744q8 4 14-1M200 700q6 5 12 2"/>', 1.6, .45);   // hammered copper
-    s += L('<path d="M300 432c-12-14 12-24 0-40M346 420c-12-14 12-24 0-42M392 432c-10-12 10-20 0-34"/>', 1.8, .45);                          // steam
-
-    // bread slice
-    var crust = "M-95 55C-105 -10 -70 -70 0 -72C70 -74 108 -15 98 55Z", crumb = "M-82 46C-90 -6 -60 -58 0 -60C60 -61 92 -10 85 46Z";
-    s += '<g transform="translate(140 866) rotate(-10)">' +
-      W("#8C8278", blob(4, 64, 102, 13, 501, .1, 10), .2, "mmB") +
-      W("url(#mmCrust)", '<path d="' + crust + '"/>', .92) +
-      H('<path d="' + crumb + '"/>') +
-      W("url(#mmCrumb)", '<path d="' + crumb + '"/>', .88) +
-      W("#D4B47C", pts(14, 0, -6, 62, 38, 502).map(function (p, i) { return blob(p[0], p[1], 3 + p[2] * 5, 2 + p[2] * 3, 510 + i, .3, 6, p[2] * 90); }).join(""), .6, "mmB") +
-      H(dots(10, 0, -66, 70, 6, 503, 1.2, 2.4), .8) +
-      L('<path d="' + crust + '"/>', 2, .8, null, "90 14 40 10") + L('<path d="' + crumb + '"/>', 1.4, .5, null, "40 18") +
-      "</g>";
-
-    // tea in an ince belli glass
-    var glass = "M550 792C547 822 566 842 568 862C570 884 553 902 556 920L624 920C627 902 610 884 612 862C614 842 633 822 630 792Z";
-    var tea = "M553 806C552 828 569 845 571 864C573 884 558 900 560 915L620 915C622 900 607 884 609 864C611 845 628 828 627 806Z";
-    s += '<g transform="translate(18 0)">';
-    s += W("#8C8278", blob(596, 930, 94, 20, 601, .06, 12), .2, "mmB");
-    s += H('<path d="' + ellD(590, 922, 84, 20) + '"/>');
-    s += W(NOTE, ring([590, 922, 84, 20], [590, 921, 75, 15]), .55, "mmB");
-    s += W("url(#mmTea)", '<path d="' + tea + '"/>', .93);
-    s += W("#E58A55", '<path d="' + ellD(590, 806, 37, 6) + '"/>', .8, "mmB");
-    s += H('<path d="M561 814C561 832 573 848 575 864C576 880 567 893 567 906L572 906C572 893 581 880 580 864C578 848 567 832 567 814Z"/>', .85);
-    s += L('<path d="' + glass + '"/><path d="' + ellD(590, 792, 40, 6) + '"/><path d="' + ellD(590, 922, 84, 20) + '"/>', 2, .85);
-    s += L('<path d="M578 774c-8-10 8-16 0-28M600 770c-8-10 8-16 0-28"/>', 1.5, .35);
+    /* --- parsley sprig, top left --- */
+    s += '<g transform="translate(-10 10)">';
+    var sprig = [[46, 112, 1.2, -40], [138, 94, 1.15, 35], [104, 62, 1.2, 0], [64, 152, .9, -70], [124, 128, .9, 60], [84, 96, .95, -15]];
+    var sprigLeaves = sprig.map(function (l) { return at(LEAF, l[0], l[1], l[2], l[3]); }).join("");
+    s += PF("#86B653", sprigLeaves, .95, .5);
+    s += PS("#4F7F32", sprig.map(function (l) { return at(LEAF, l[0] + 2, l[1] + 1, l[2] * .55, l[3]); }).join(""), .8);
+    s += OL('<path d="M72 198C76 172 88 144 104 66M80 162C66 150 54 134 46 112M92 130C110 124 126 112 138 94M98 100C94 98 90 97 84 96"/>', 1.5, .85);
+    s += PF("#9CC46A", '<path d="M70 198C74 172 86 144 102 66l4 0C90 144 78 172 74 198z"/>', .8, .6);
+    s += OL2(sprigLeaves, 1.3, .85);
+    s += OL(sprig.map(function (l) { return at(VEIN, l[0], l[1], l[2], l[3]); }).join(""), .9, .55);
     s += "</g>";
 
-    // notes in blue
-    o += only("tr en", L('<path d="M524 368C530 384 528 398 514 414M514 414l1-11M514 414l10-4"/><path d="M262 900C244 898 228 890 214 876M214 876l2 11M214 876l11 3"/>', 2, .8, NOTE));
-    o += '<g>';
-    o += only("tr", T(462, 318, "bakır sahanda,", 27, { cls: "mm-hand mm-note", rot: 4 }) + T(470, 350, "ocaktan sofraya", 27, { cls: "mm-hand mm-note", rot: 4 }) +
-      T(262, 914, "ekmeği banmadan olmaz!", 25, { cls: "mm-hand mm-note", rot: -4 }));
-    o += only("en", T(462, 318, "in a copper pan,", 27, { cls: "mm-hand mm-note", rot: 4 }) + T(470, 350, "stove to table", 27, { cls: "mm-hand mm-note", rot: 4 }) +
-      T(262, 914, "bread for dipping!", 25, { cls: "mm-hand mm-note", rot: -4 }));
-    o += T(72, 966, "01", 16, { cls: "mm-small" });
-    o += "</g>";
+    /* --- the title sign, hanging from a nail --- */
+    var board = "M182 100C240 96 380 96 438 100C442 125 444 155 440 182C380 186 240 186 180 182C176 155 178 125 182 100Z";
+    s += OL('<path d="M310 66L196 102M310 66L424 102"/>', 1.2, .8);
+    s += PD(PEN, '<circle cx="310" cy="64" r="3.6"/>', .9);
+    s += PF("#F2D98A", P(board), .95, .55);
+    s += PS("#D49E45", P("M184 160C240 168 380 168 438 160L440 182C380 186 240 186 180 182Z"), .75);
+    s += OL('<path d="M194 110C250 107 372 107 428 110C431 132 431 152 429 172C372 175 250 175 192 172C190 152 190 132 194 110Z"/>', 1.1, .75, RED, "5 5");
+    s += OL2(P(board), 1.8, .9);
+    // cherry tomatoes and basil on the corners
+    var cherries = '<circle cx="182" cy="98" r="11"/><circle cx="200" cy="90" r="10"/><circle cx="440" cy="96" r="11"/>';
+    var basil = at(BASIL, 168, 104, 1, -60) + at(BASIL, 214, 92, .9, 55) + at(BASIL, 456, 104, .95, 50) + at(BASIL, 424, 92, .8, -40);
+    s += PF("#6EA349", basil, .95, .5);
+    s += PF("#E2483A", cherries, .95, .55);
+    s += PS("#A62920", '<circle cx="186" cy="102" r="7"/><circle cx="204" cy="94" r="6"/><circle cx="444" cy="100" r="7"/>', .8);
+    s += PE('<circle cx="178" cy="94" r="2.6"/><circle cx="197" cy="86" r="2.3"/><circle cx="436" cy="92" r="2.6"/>', .95);
+    s += OL(cherries + basil + at("M0 0L0 -20", 168, 104, 1, -60) + at("M0 0L0 -20", 456, 104, .95, 50), 1.3, .85);
 
-    /* ===== RIGHT PAGE: ingredients, one by one, then the method ===== */
-    s += W("#3E70B5", blob(870, 122, 104, 17, 701, .16, 10, -2), .16, "mmB");
-    o += '<g>';
-    o += only("tr blank", T(772, 140, "Malzemeler", 66, { cls: "mm-brush mm-note", rot: -2 }));
-    o += only("en", T(772, 140, "Ingredients", 66, { cls: "mm-brush mm-note", rot: -2 }));
-    o += "</g>";
+    /* --- çaydanlık and a tea glass, top right --- */
+    var lower = "M545 232C530 226 528 192 545 172L640 172C657 192 655 226 640 232Z";
+    var lowerSpout = "M546 202C526 197 516 182 509 167L517 164C524 177 533 187 549 192Z";
+    var upper = "M566 170C556 152 561 127 576 117L609 117C624 127 629 152 619 170Z";
+    var lid = "M573 117C576 101 609 101 612 117Z";
+    var upperSpout = "M566 152C551 147 544 134 541 120L548 118C552 130 558 138 569 142Z";
+    s += PS("#9C948C", blob(596, 236, 64, 7, 801, .1, 10), .5);
+    s += PF("#48A0B2", P(lower) + P(lowerSpout), .95, .5);
+    s += PS("#2B6E80", P("M615 176L640 172C657 192 655 226 640 232L612 232Z") + P("M520 168C526 180 534 188 548 192L546 202C530 198 520 186 514 172Z"), .85);
+    s += PE(P("M552 184C548 198 548 214 554 226L560 226C556 214 556 198 560 184Z"), .9);
+    s += PF("#7CC3D0", P(upper) + P(lid) + P(upperSpout), .95, .5);
+    s += PS("#3F8C9E", P("M600 120L609 117C624 127 629 152 619 170L598 170Z"), .8);
+    s += PE('<circle cx="566" cy="206" r="6"/><circle cx="592" cy="214" r="6.5"/><circle cx="618" cy="204" r="6"/><circle cx="588" cy="140" r="4.5"/>', .95);
+    s += PD("#D8453A", '<circle cx="566" cy="206" r="2.2"/><circle cx="592" cy="214" r="2.4"/><circle cx="618" cy="204" r="2.2"/><circle cx="588" cy="140" r="1.8"/>', .9);
+    s += OL2(P(lower) + P(lowerSpout) + P(upper) + P(lid) + P(upperSpout) + '<path d="' + ellD(592.5, 172, 47.5, 6) + '"/>', 1.5, .9);
+    s += OL('<path d="M640 182C668 184 672 216 645 223M620 126C640 126 642 156 622 160"/>', 3, .9);
+    s += PD(PEN, '<circle cx="592.5" cy="98" r="5"/>', .9);
+    s += OL('<circle cx="566" cy="206" r="6"/><circle cx="592" cy="214" r="6.5"/><circle cx="618" cy="204" r="6"/>', .9, .6);
+    // ince belli glass on its saucer
+    var glass = "M474 166C472 182 482 190 483 198C484 208 476 216 478 226L500 226C502 216 494 208 495 198C496 190 506 182 504 166Z";
+    var tea = "M476 176C476 188 484 194 485 200C486 209 479 216 480 223L498 223C499 216 492 209 493 200C494 194 502 188 502 176Z";
+    s += PF("#C2502A", P(tea), .95, .6);
+    s += PS("#7E2A12", P("M486 200C487 209 481 216 482 223L498 223C499 216 492 209 493 200Z"), .7);
+    s += PE(P("M479 180C480 190 486 195 486 200L489 200C489 194 484 189 483 180Z"), .9);
+    s += PF("#E7DCC6", '<path d="' + ellD(489, 228, 27, 6) + '"/>', .8, .6);
+    s += OL(P(glass) + '<path d="' + ellD(489, 166, 15, 3) + '"/><path d="' + ellD(489, 228, 27, 6) + '"/>', 1.3, .85);
+    s += OL('<path d="M484 150c-5-7 5-11 0-18M494 148c-5-7 5-11 0-18"/>', 1.1, .4);
 
-    // eggs
-    s += W("#8C8278", blob(838, 270, 70, 9, 702, .1, 10), .2, "mmB");
-    s += W("url(#mmShell)", blob(812, 222, 33, 43, 101, .04, 12, -14), .92);
-    s += W("url(#mmBrownEgg)", blob(860, 232, 31, 40, 102, .04, 12, 12), .92);
-    s += W("#B9966A", blob(824, 238, 17, 27, 103, .15, 8, -14) + blob(870, 248, 15, 23, 104, .15, 8, 12), .3, "mmB");
-    s += W("#8E5A33", dots(10, 862, 232, 22, 30, 705, .8, 1.6), .55, "mmB");
-    s += H(blob(800, 205, 7, 11, 105, .2, 7, -14) + blob(851, 214, 6, 10, 106, .2, 7, 12), .9);
-    s += L('<path d="' + blobD(814, 220, 33, 43, 101, .03, 12, -14) + '"/><path d="' + blobD(862, 230, 31, 40, 102, .03, 12, 12) + '"/>', 1.8, .75, null, "80 12 40 10");
+    /* --- the finished menemen in a copper sahan --- */
+    var cx = 512, cy = 372;
+    s += PS("#9C948C", blob(cx + 14, cy + 22, 152, 104, 811, .05, 14), .5);
+    s += PF("#CF7A42", blob(360, 368, 27, 12, 812, .08, 10, -8) + blob(664, 362, 27, 12, 813, .08, 10, 8), .95, .55);
+    s += PF("#CF7A42", blob(cx, cy, 140, 100, 814, .03, 16), .95, .65);
+    s += PS("#9E4E2C", ring([cx, cy, 140, 100], [cx - 6, cy + 4, 120, 84]), .8);
+    s += PE(blob(cx, cy + 8, 120, 84, 815, .03, 16));
+    s += PS("#A4552F", ring([cx, cy, 124, 88], [cx, cy + 8, 118, 82]), .7);
+    s += PF("#DD4A33", blob(cx, cy + 8, 118, 82, 816, .04, 16), .95, .7);
+    s += PS("#B2322A", blob(440, 410, 34, 20, 817, .3, 8) + blob(590, 336, 28, 18, 818, .3, 8) + blob(600, 420, 26, 16, 819, .3, 8) + blob(470, 318, 24, 14, 820, .3, 8), .75);
+    s += PF("#F2A35A", blob(cx, 386, 60, 38, 821, .25, 10), .5, .5);
+    var peppers = [[420, 360, 22, 7, -30], [532, 324, 24, 7, 15], [606, 392, 22, 6, 70], [444, 438, 20, 6, 20], [560, 440, 22, 6, -15], [520, 384, 17, 5, 40]];
+    s += PF("#7DB04A", peppers.map(function (p, i) { return blob(p[0], p[1], p[2], p[3], 830 + i, .12, 8, p[4]); }).join(""), .95, .55);
+    s += PS("#3F6E2A", peppers.map(function (p, i) { return blob(p[0] + 2, p[1] + 2, p[2] * .7, p[3] * .45, 840 + i, .2, 7, p[4]); }).join(""), .7);
+    var eggs = [[474, 356, 40, 31, 851], [562, 380, 38, 29, 852], [500, 412, 34, 26, 853]];
+    var whites = eggs.map(function (e) { return blob(e[0], e[1], e[2], e[3], e[4], .16, 11); }).join("");
+    s += PE(whites);
+    s += PS("#AEB6C2", eggs.map(function (e) { return blob(e[0] + 9, e[1] + 8, e[2] * .65, e[3] * .5, e[4] + 10, .2, 9); }).join(""), .55);
+    s += PF("#F6B829", eggs.map(function (e) { return '<circle cx="' + (e[0] + 3) + '" cy="' + (e[1] - 2) + '" r="15"/>'; }).join(""), .95, .6);
+    s += PS("#DD7E19", eggs.map(function (e) { return blob(e[0] + 8, e[1] + 3, 10, 7, e[4] + 20, .2, 8, 20); }).join(""), .75);
+    s += PE(eggs.map(function (e) { return blob(e[0] - 3, e[1] - 8, 4, 2.6, e[4] + 30, .2, 6, -25); }).join(""), .95);
+    s += PD("#4F8A35", leaves(14, cx, 380, 104, 70, 861, 4.5), .9);
+    s += PD("#8E1E12", dots(32, cx, 382, 106, 72, 862, 1.1, 2.2), .85);
+    s += OL2('<path d="' + ellD(cx + 2, cy - 3, 140, 100) + '"/><path d="' + blobD(358, 366, 27, 12, 812, .06, 10, -8) + '"/><path d="' + blobD(666, 360, 27, 12, 813, .06, 10, 8) + '"/>', 1.7, .9);
+    s += OL('<path d="' + ellD(cx + 1, cy + 6, 121, 85) + '"/><circle cx="380" cy="364" r="2.4"/><circle cx="385" cy="376" r="2.4"/><circle cx="644" cy="358" r="2.4"/><circle cx="639" cy="370" r="2.4"/>', 1.3, .8);
+    s += OL(eggs.map(function (e) { return '<path d="' + blobD(e[0] + 1, e[1] - 1, e[2], e[3], e[4], .16, 11) + '"/>'; }).join(""), 1.3, .75, null, "50 10 26 8");
+    s += OL(eggs.map(function (e) { return '<circle cx="' + (e[0] + 4) + '" cy="' + (e[1] - 3) + '" r="15"/>'; }).join(""), 1.1, .7);
+    s += OL('<path d="M586 446q6-4 11 0M612 420q6-5 10 1M392 420q6 4 11 1M420 452q6 3 12-1"/>', 1.1, .45);
+    // wooden spoon resting in the pan
+    var spoonBowl = blob(600, 338, 18, 11, 870, .05, 10, -28), spoon = "M612 330C632 318 660 300 684 286L688 292C664 307 637 325 617 337Z";
+    s += PF("#C9944F", spoonBowl + P(spoon), .95, .55);
+    s += PS("#93632F", blob(604, 342, 11, 6, 871, .1, 8, -28) + P("M650 314C664 304 676 297 686 290L688 292C676 300 664 308 652 317Z"), .75);
+    s += OL2('<path d="' + blobD(600, 338, 18, 11, 870, .05, 10, -28) + '"/>' + P(spoon), 1.3, .85);
+    // a slice of bread leaning on the pan
+    var crust = "M-95 55C-105 -10 -70 -70 0 -72C70 -74 108 -15 98 55Z", crumb = "M-82 46C-90 -6 -60 -58 0 -60C60 -61 92 -10 85 46Z";
+    s += '<g transform="translate(398 470) rotate(-12) scale(.7)">' +
+      PF("#B9773A", P(crust), .95, .55) + PE(P(crumb)) + PF("#F0DCAE", P(crumb), .85, .6) +
+      PD("#C9A46C", pts(14, 0, -6, 60, 36, 872).map(function (q, i) { return blob(q[0], q[1], 3 + q[2] * 5, 2 + q[2] * 3, 880 + i, .3, 6, q[2] * 90); }).join(""), .7) +
+      OL2(P(crust), 2, .9) + OL(P(crumb), 1.4, .55, null, "40 14") + "</g>";
 
-    // tomatoes: one whole, one halved
-    function calyx(x, y, seed) {
+    /* --- red bullets, and the underline under NOT --- */
+    var dashes = "";
+    for (var i = 6; i <= 12; i++) dashes += "M62 " + (ly(i) - 7) + "l14 -.5";
+    [16, 18, 21].forEach(function (k2) { dashes += "M42 " + (ly(k2) - 7) + "l15 -.5"; });
+    s += OL('<path d="' + dashes + '"/>', 2.6, .85, RED);
+    s += OL('<path d="M60 ' + (ly(23) + 5) + 'C76 ' + (ly(23) + 7) + " 96 " + (ly(23) + 4) + " 116 " + (ly(23) + 6) + '"/>', 1.8, .85, RED);
+    s += OL('<path d="M60 ' + (ly(5) + 7) + "C110 " + (ly(5) + 11) + " 160 " + (ly(5) + 4) + " 214 " + (ly(5) + 8) + '"/><path d="M60 ' + (ly(15) + 7) + "C100 " + (ly(15) + 10) + " 140 " + (ly(15) + 4) + " 176 " + (ly(15) + 8) + '"/>', 1.6, .8);
+
+    /* --- bottom row: tomatoes on the vine, eggs in a basket, two peppers --- */
+    var toms = '<circle cx="92" cy="918" r="26"/><circle cx="140" cy="926" r="24"/><circle cx="180" cy="912" r="21"/>';
+    s += PS("#9C948C", blob(140, 950, 80, 6, 890, .1, 10), .45);
+    s += PF("#E2483A", toms, .95, .55);
+    s += PS("#A62920", '<circle cx="100" cy="926" r="17"/><circle cx="147" cy="933" r="15"/><circle cx="186" cy="918" r="13"/>', .8);
+    s += PE('<circle cx="82" cy="906" r="4.5"/><circle cx="131" cy="915" r="4"/><circle cx="172" cy="902" r="3.6"/>', .95);
+    var calyx = function (x, y, seed) {
       var out = "";
-      for (var k = 0; k < 5; k++) {
-        var a = k / 5 * Math.PI * 2 - Math.PI / 2;
-        out += blob(x + Math.cos(a) * 10, y + Math.sin(a) * 5, 11, 3.6, seed + k, .2, 6, a * 180 / Math.PI);
-      }
+      for (var c = 0; c < 5; c++) { var a = c / 5 * Math.PI * 2 - Math.PI / 2; out += blob(x + Math.cos(a) * 7, y + Math.sin(a) * 3.5, 8, 2.6, seed + c, .2, 6, a * 180 / Math.PI); }
       return out;
-    }
-    s += W("#8C8278", blob(1050, 272, 70, 9, 706, .1, 10), .2, "mmB");
-    s += W("url(#mmTomato)", blob(1022, 228, 44, 40, 111, .06, 12), .93);
-    s += W("#5E8C3A", calyx(1020, 192, 120) + '<path d="M1019 192c1-8 4-14 9-18l3 2c-5 4-7 9-8 16z"/>', .9, "mmB");
-    s += H(blob(1006, 212, 9, 6, 113, .2, 7, -30), .9);
-    s += W("url(#mmTomato)", blob(1080, 252, 32, 25, 114, .04, 12, -8), .93);
-    s += H(blob(1080, 252, 26, 19, 115, .05, 12, -8));
-    s += W("#F39478", blob(1080, 252, 26, 19, 115, .05, 12, -8), .8, "mmB");
-    s += W("#F2C14E", blob(1069, 247, 7, 5, 116, .2, 6, 30) + blob(1090, 247, 7, 5, 117, .2, 6, -30) + blob(1080, 262, 7, 5, 118, .2, 6, 90), .7, "mmB");
-    s += L('<path d="' + blobD(1024, 226, 44, 40, 111, .05, 12) + '"/><path d="' + blobD(1082, 250, 32, 25, 114, .04, 12, -8) + '"/>' +
-      '<path d="M1002 222c4 10 10 16 18 20M1040 218c-2 10-8 18-16 22"/>', 1.8, .75, null, "70 10 30 8");
-    s += L('<path d="M1068 246h.01M1072 250h.01M1088 245h.01M1092 249h.01M1078 263h.01M1083 261h.01"/>', 2.6, .7);
-
+    };
+    var cal = calyx(92, 893, 900) + calyx(140, 903, 910) + calyx(180, 892, 920);
+    s += PF("#5E9A3E", cal, .95, .6);
+    s += OL2(toms, 1.4, .9);
+    s += OL('<path d="M74 880C96 872 124 874 186 878M92 880v12M140 878v24M180 879v12"/>' + cal, 1.2, .8);
+    s += PF("#6E9C47", P("M74 879C96 871 124 873 186 877l0 3C124 877 96 875 74 882z"), .9, .6);
+    // basket of eggs
+    var basket = "M254 902L396 902L384 956L266 956Z", rim = "M250 897C300 889 350 889 400 897L398 908C350 900 300 900 252 908Z";
+    var e1 = blob(292, 890, 19, 24, 930, .04, 10, -8), e2 = blob(328, 884, 20, 26, 931, .04, 10, 4), e3 = blob(363, 891, 18, 23, 932, .04, 10, 10);
+    s += PS("#9C948C", blob(326, 960, 76, 6, 933, .1, 10), .45);
+    s += PF("#F2E0BE", e1 + e3, .9, .6);
+    s += PF("#D9A36E", e2, .95, .6);
+    s += PS("#B98A5A", blob(298, 896, 9, 14, 934, .2, 8, -8) + blob(336, 892, 9, 15, 935, .2, 8, 4) + blob(369, 897, 8, 13, 936, .2, 8, 10), .5);
+    s += PF("#C99A5A", P(basket) + P(rim) + '<path d="M262 902C270 842 380 842 388 902" fill="none" stroke="#C99A5A" stroke-width="7"/>', .95, .55);
+    s += PS("#8C6033", P("M262 936L388 936L384 956L266 956Z"), .8);
+    s += OL2(P(basket) + P(rim) + e1 + e2 + e3, 1.3, .85);
+    s += OL('<path d="M262 902C270 842 380 842 388 902M262 908C270 852 380 852 388 908"/><path d="M262 918H390M264 930H388M266 942H386M290 908L292 956M314 908L314 956M338 908L337 956M362 908L360 956"/>', 1, .6);
     // two sivri biber
-    var p1 = "M1192 168C1226 172 1258 194 1280 232C1290 250 1297 263 1300 274C1291 270 1282 261 1272 248C1250 220 1224 200 1188 186C1182 180 1184 170 1192 168Z";
-    var p2 = "M1186 198C1218 206 1246 228 1262 262C1268 275 1272 285 1273 294C1265 289 1257 280 1250 268C1234 242 1212 224 1182 216C1176 210 1178 200 1186 198Z";
-    s += W("#8C8278", blob(1250, 300, 66, 8, 707, .1, 10), .18, "mmB");
-    s += W("url(#mmPepper)", '<path d="' + p1 + '"/><path d="' + p2 + '"/>', .92);
-    s += W("#3F6E2A", blob(1258, 236, 34, 5, 131, .2, 8, 42) + blob(1236, 262, 30, 4, 132, .2, 8, 46), .35, "mmB");
-    s += W("#4C7A30", '<path d="M1190 170c-9-3-15-11-16-21l5-1c1 8 6 14 13 17z"/><path d="M1184 200c-9-3-15-11-16-21l5-1c1 8 6 14 13 17z"/>' + blob(1190, 177, 7, 9, 133, .2, 7) + blob(1184, 207, 7, 9, 134, .2, 7), .9, "mmB");
-    s += H('<path d="M1206 176C1232 182 1253 198 1268 222C1260 214 1240 196 1207 182Z"/><path d="M1199 206C1222 214 1241 230 1252 252C1244 244 1226 228 1200 212Z"/>', .8);
-    s += L('<path d="' + p1 + '"/><path d="' + p2 + '"/><path d="M1190 170c-9-3-15-11-16-21M1184 200c-9-3-15-11-16-21"/>', 1.8, .75, null, "90 12 50 10");
+    var pa = "M420 900C450 892 500 894 540 910C552 914 560 920 566 928C554 928 544 924 532 920C496 908 456 908 424 912C416 910 414 902 420 900Z";
+    var pb = "M430 920C460 916 506 922 540 938C548 942 554 947 557 952C548 952 538 950 528 946C498 934 462 932 434 934C426 932 424 922 430 920Z";
+    s += PS("#9C948C", blob(492, 956, 70, 5, 940, .1, 10), .4);
+    s += PF("#86B653", P(pa) + P(pb), .95, .55);
+    s += PS("#3F6E2A", blob(500, 912, 40, 4, 941, .2, 8, 8) + blob(500, 934, 36, 4, 942, .2, 8, 12), .7);
+    s += PE(P("M432 903C460 898 500 900 530 911C500 904 462 902 433 906Z") + P("M442 923C470 920 504 925 528 935C503 928 470 925 443 926Z"), .85);
+    s += PF("#4C7A30", P("M420 901c-8 -3-14-2-20 2l2 3c5-3 10-4 17-2z") + P("M430 921c-8-3-14-2-20 2l2 3c5-3 10-4 17-2z"), .95, .6);
+    s += OL2(P(pa) + P(pb) + P("M420 901c-8-3-14-2-20 2M430 921c-8-3-14-2-20 2"), 1.3, .85);
 
-    // butter
-    var top = "M775 410L850 392L900 412L825 432Z", front = "M775 410L825 432L825 470L775 448Z", side = "M825 432L900 412L900 450L825 470Z";
-    s += W("#C9D3DE", '<path d="M752 442L860 412L928 446L820 482Z"/>', .35, "mmB");
-    s += W("#FCEFB4", '<path d="' + top + '"/>', .95);
-    s += W("#F2D36E", '<path d="' + front + '"/>', .9, "mmB");
-    s += W("#E2BB50", '<path d="' + side + '"/>', .9);
-    s += W("#F6DC86", blob(846, 404, 16, 7, 141, .2, 8, -10), .9, "mmB");
-    s += L('<path d="' + top + '"/><path d="M775 410V448L825 470L900 450V412M825 432V470"/><path d="M834 405c5-7 18-7 22 0c3 5-6 9-13 5"/><path d="M790 412l30 8M800 404l26 7"/>', 1.8, .75);
+    // a jar of pul biber
+    var jar = "M602 884C600 900 600 936 604 950C614 954 634 954 644 950C648 936 648 900 646 884Z", cork = "M606 870L642 870L640 886L608 886Z";
+    s += PS("#9C948C", blob(626, 956, 34, 5, 950, .1, 10), .45);
+    s += PF("#B5301F", P("M603 906C602 922 602 940 605 949C615 953 633 953 643 949C646 940 646 922 645 906Z"), .95, .7);
+    s += PD("#7E1A10", dots(18, 624, 928, 18, 20, 951, 1, 2), .85);
+    s += PD("#E8B04A", dots(8, 624, 928, 18, 20, 952, .8, 1.4), .8);
+    s += PE(P("M607 890C606 906 606 928 608 944L612 944C610 928 610 906 611 890Z"), .85);
+    s += PF("#C9944F", P(cork), .95, .6);
+    s += OL2(P(jar) + P(cork) + '<path d="M604 896H644"/>', 1.3, .85);
 
-    // salt and pul biber, in a small İznik bowl
-    var bowl = "M978 428h80c0 26-18 40-40 40s-40-14-40-40z";
-    s += W("#8C8278", blob(1030, 474, 64, 8, 708, .1, 10), .18, "mmB");
-    s += W("#3E70B5", '<path d="' + bowl + '"/>', .85);
-    s += H('<path d="M984 446c10 5 58 5 68 0l-2 6c-10 4-54 4-64 0z"/>', .95);
-    s += W("#3E70B5", dots(5, 1018, 449, 26, 1, 709, 2, 2.4), .8, "mmB");
-    s += W("#B5301F", blob(1018, 424, 37, 10, 151, .2, 10), .9);
-    s += W("#7E1A10", dots(18, 1018, 421, 30, 7, 152, 1.3, 2.6), .8, "mmB");
-    s += W("#E8B04A", dots(6, 1018, 421, 26, 6, 153, 1, 1.6), .7, "mmB");
-    s += W("#AEB7C4", blob(1096, 458, 22, 7, 154, .2, 8), .45, "mmB");
-    s += W("#9AA5B4", dots(16, 1096, 452, 18, 6, 155, .9, 1.8), .7, "mmB");
-    s += L('<path d="' + bowl + '"/><path d="' + ellD(1018, 428, 40, 6) + '"/>', 1.8, .75);
-    s += L('<path d="M1078 459c6-11 30-13 38 0"/>', 1.4, .35);
-    o += only("tr en", L('<path d="M1112 404C1116 420 1112 432 1102 440M1102 440l3-10M1102 440l10-2"/>', 1.8, .8, NOTE));
-
-    // onion, optional
-    var bulb = "M1250 382C1262 398 1290 410 1290 440C1290 466 1272 478 1250 478C1228 478 1210 466 1210 440C1210 410 1238 398 1250 382Z";
-    s += W("#8C8278", blob(1254, 484, 50, 7, 710, .1, 10), .2, "mmB");
-    s += W("url(#mmOnion)", '<path d="' + bulb + '"/>', .9);
-    s += W("#7C3057", blob(1238, 440, 5, 30, 161, .2, 8, 8) + blob(1264, 442, 5, 28, 162, .2, 8, -8), .3, "mmB");
-    s += W("#9BB86A", '<path d="M1250 384c-3-12-2-22 2-31c2 8 3 19-2 31z"/>', .9, "mmB");
-    s += H(blob(1230, 428, 6, 17, 163, .2, 7, 8), .8);
-    s += L('<path d="' + bulb + '"/><path d="M1250 384C1236 410 1232 450 1240 476M1250 384C1264 410 1268 450 1260 476M1242 480l-4 10M1250 480v11M1258 480l4 10"/><path d="M1250 384c-3-12-2-22 2-31"/>', 1.8, .75);
-
-    // ingredient labels
-    function label(x, y, tr, en, two) {
-      var o = '<g>' + only("tr", T(x, y, tr[0], 27, { anchor: "middle" }) + (tr[1] ? T(x, y + 30, tr[1], 27, { anchor: "middle" }) : "")) +
-        only("en", T(x, y, en[0], 27, { anchor: "middle" }) + (en[1] ? T(x, y + 30, en[1], 27, { anchor: "middle" }) : "")) + "</g>";
-      return o + only("blank", ruled(x - 64, x + 64, y + 2) + (two ? ruled(x - 48, x + 48, y + 32) : ""));
+    /* --- Afiyetle stamp --- */
+    var bumps = "", n = 12, scx = 622, scy = 818, srx = 58, sry = 30;
+    for (var b = 0; b <= n; b++) {
+      var a2 = b / n * Math.PI * 2, x2 = scx + Math.cos(a2) * srx, y2 = scy + Math.sin(a2) * sry;
+      bumps += b === 0 ? "M" + n1(x2) + " " + n1(y2) : "A13 13 0 0 1 " + n1(x2) + " " + n1(y2);
     }
-    o += label(835, 330, ["4 yumurta"], ["4 eggs"]);
-    o += label(1045, 330, ["3 olgun domates"], ["3 ripe tomatoes"]);
-    o += label(1245, 330, ["2 sivri biber"], ["2 green peppers"]);
-    o += label(838, 520, ["2 yemek kaşığı", "tereyağı"], ["2 tbsp butter"], true);
-    o += label(1040, 520, ["tuz, pul biber"], ["salt, chilli flakes"]);
-    o += label(1250, 520, ["1 soğan", "(isteğe bağlı)"], ["1 onion", "(optional)"], true);
-    o += '<g>';
-    o += only("tr", T(1072, 394, "bir tutam!", 24, { cls: "mm-hand mm-note", rot: 6 }) + T(1250, 588, "soğanlı mı, soğansız mı?", 23, { cls: "mm-hand mm-note", anchor: "middle", rot: -2 }));
-    o += only("en", T(1072, 394, "a pinch!", 24, { cls: "mm-hand mm-note", rot: 6 }) + T(1250, 588, "onion or not? you decide", 23, { cls: "mm-hand mm-note", anchor: "middle", rot: -2 }));
-    o += "</g>";
+    s += PF("#F2B3A8", P(bumps + "Z"), .55, .5);
+    s += OL2(P(bumps + "Z"), 1.8, .85, RED);
 
-    // divider
-    s += L('<path d="M782 614C900 606 980 620 1040 612M1080 612C1150 606 1240 618 1320 610"/><path d="M1060 612c-6-8-2-16 6-18c2 8-1 14-6 18zM1060 612c8-4 16-2 18 4c-8 2-14 0-18-4z"/>', 1.5, .45);
+    /* --- footer strip: when you first made it, and how it went --- */
+    s += PF("#E6D8BA", '<rect x="34" y="966" width="632" height="26" rx="3"/>', .7, .7);
+    var stars = "";
+    for (var st = 0; st < 5; st++) {
+      var sx = 574 + st * 20, sy = 979, pth = "";
+      for (var q = 0; q < 10; q++) { var ang = -Math.PI / 2 + q * Math.PI / 5, rr = q % 2 ? 3 : 7; pth += (q ? "L" : "M") + n1(sx + Math.cos(ang) * rr) + " " + n1(sy + Math.sin(ang) * rr); }
+      stars += P(pth + "Z");
+    }
+    s += OL(stars, 1.1, .7);
 
-    o += '<g>';
-    o += only("tr blank", T(772, 676, "Yapılışı", 60, { cls: "mm-brush mm-note", rot: -2 }));
-    o += only("en", T(772, 676, "Method", 60, { cls: "mm-brush mm-note", rot: -2 }));
-    o += "</g>";
+    /* ===== text, layered live on top ===== */
+    // planner-style header, bilingual on every variant
+    o += '<text x="300" y="52" font-size="16" class="mm-serif" text-anchor="end">Kahvaltı • Breakfast</text>';
+    o += '<text x="350" y="60" font-size="36" class="mm-serif mm-red" text-anchor="middle">01</text>';
+    o += only("tr", '<text x="400" y="52" font-size="16" class="mm-serif">2 kişilik • 20 dakika</text>');
+    o += only("en", '<text x="400" y="52" font-size="16" class="mm-serif">serves 2 • 20 minutes</text>');
+    o += only("blank", '<text x="400" y="52" font-size="16" class="mm-serif">___ kişilik • ___ dakika</text>');
 
-    // method: three steps, each with a tiny sketch
-    var steps = [
-      [724, ["Biberleri tereyağında,", "yumuşayana kadar kavur."], ["Soften the peppers", "gently in the butter."]],
-      [812, ["Rendelenmiş domatesi ekle,", "suyunu çekene kadar pişir."], ["Add the grated tomatoes and", "cook until the juice is gone."]],
-      [900, ["Yumurtaları kır, çok karıştırma.", "Pul biberle sıcak servis et."], ["Crack in the eggs, stir gently.", "Serve hot with chilli flakes."]]
-    ];
-    var icons =
-      W("url(#mmCopper)", blob(800, 724, 26, 20, 171, .05, 10), .85) + H(blob(800, 726, 19, 14, 172, .05, 10)) +
-      W("url(#mmPepper)", blob(794, 722, 9, 3, 173, .2, 6, -20) + blob(806, 729, 9, 3, 174, .2, 6, 30), .9, "mmB") +
-      L('<path d="' + ellD(800, 724, 26, 20) + '"/><path d="M825 716l24-9"/>', 1.6, .75) +
-      W("#DA3D2F", blob(812, 840, 18, 6, 175, .2, 8), .8, "mmB") +
-      L('<path d="M790 836L796 786H816L822 836Z"/><path d="M801 786c0-9 10-9 10 0"/><path d="M800 798h.01M808 798h.01M800 808h.01M808 808h.01M812 818h.01M800 818h.01M806 826h.01"/>', 1.6, .75) +
-      W("url(#mmShell)", '<path d="M786 892c0-14 8-24 18-24s18 10 18 24l-6-4-6 5-6-5-6 5-6-5z"/>', .9) +
-      W("url(#mmYolk)", blob(806, 916, 8, 7, 176, .1, 8), .95, "mmB") +
-      L('<path d="M786 892c0-14 8-24 18-24s18 10 18 24l-6-4-6 5-6-5-6 5-6-5z"/><path d="M804 900v6"/>', 1.6, .75);
-    o += only("tr en", icons);
-    o += '<g>';
-    steps.forEach(function (st, i) {
-      o += only("tr en", T(858, st[0] + 6, String(i + 1), 40, { cls: "mm-brush mm-note" }));
-      o += only("tr", T(892, st[0], st[1][0], 27) + T(892, st[0] + 34, st[1][1], 27));
-      o += only("en", T(892, st[0], st[2][0], 27) + T(892, st[0] + 34, st[2][1], 27));
-    });
-    o += "</g>";
-    var blankLines = "";
-    for (var k = 0; k < 6; k++) blankLines += ruled(782, 1320, 726 + k * 38);
-    o += only("blank", blankLines + '<g>' + T(1320, 934, "kendi tarifini yaz ✎", 25, { cls: "mm-hand mm-note", anchor: "end", rot: -2 }) + "</g>");
+    o += HW(310, 160, "MENEMEN", 52, { weight: 700, anchor: "middle", ls: 5, lean: .8 });
 
-    o += '<g>';
-    o += only("tr", T(772, 966, "1 yemek kaşığı ≈ 15 ml · 1 su bardağı ≈ 200 ml", 15, { cls: "mm-small" }));
-    o += only("en", T(772, 966, "1 TBSP ≈ 15 ML · 1 TURKISH CUP ≈ 200 ML", 15, { cls: "mm-small" }));
-    o += T(1328, 966, "02", 16, { cls: "mm-small", anchor: "end" });
-    o += "</g>";
+    o += only("tr blank", HW(60, ly(5), "Malzemeler", 30, { weight: 700 }));
+    o += only("en", HW(60, ly(5), "Ingredients", 30, { weight: 700 }));
+    var ingTR = ["4 yumurta", "3 olgun domates", "2 sivri biber", "1 soğan (isteğe bağlı)", "2 yemek kaşığı tereyağı", "1 tatlı kaşığı pul biber", "tuz, karabiber"];
+    var ingEN = ["4 eggs", "3 ripe tomatoes", "2 green peppers", "1 onion (optional)", "2 tbsp butter", "1 tsp chilli flakes", "salt, black pepper"];
+    o += only("tr", ingTR.map(function (t, i2) { return HW(84, ly(6 + i2), t, 22); }).join(""));
+    o += only("en", ingEN.map(function (t, i2) { return HW(84, ly(6 + i2), t, 22); }).join(""));
+
+    o += only("tr en", OL('<path d="M566 492C578 486 586 478 590 466M590 466l-8 4M590 466l1 9"/>', 1.4, .8));
+    o += only("tr", HW(512, ly(14) - 2, "sıcak sıcak!", 22, { cls: "mm-hand mm-red" }));
+    o += only("en", HW(512, ly(14) - 2, "serve it hot!", 22, { cls: "mm-hand mm-red" }));
+
+    o += only("tr blank", HW(60, ly(15), "YAPILIŞI", 28, { weight: 700, ls: 2 }));
+    o += only("en", HW(60, ly(15), "METHOD", 28, { weight: 700, ls: 2 }));
+    var stepTR = ["Tereyağını sahanda erit, doğradığın biberleri", "ekle ve yumuşayana kadar kavur.",
+      "Rendelediğin domatesleri ekle, suyunu çekene", "kadar ara ara karıştırarak pişir. Tuzunu,", "karabiberini ve pul biberini at.",
+      "Yumurtaları kır, çok karıştırmadan pişir.", "Sahanı ocaktan alıp hemen sofraya getir!"];
+    var stepEN = ["Melt the butter in the pan, add the chopped", "peppers and cook until soft.",
+      "Add the grated tomatoes and cook, stirring now", "and then, until the juice is gone. Season with", "salt, black pepper and chilli flakes.",
+      "Crack in the eggs and cook without much stirring.", "Bring the pan straight from the stove to the table!"];
+    var starts = { 0: 1, 2: 1, 5: 1 };
+    o += only("tr", stepTR.map(function (t, i2) { return HW(starts[i2] ? 64 : 42, ly(16 + i2), t, 22); }).join(""));
+    o += only("en", stepEN.map(function (t, i2) { return HW(starts[i2] ? 64 : 42, ly(16 + i2), t, 22); }).join(""));
+
+    o += only("tr blank", HW(60, ly(23), "NOT:", 24, { weight: 700, cls: "mm-hand mm-red", lean: .6 }));
+    o += only("en", HW(60, ly(23), "NOTE:", 24, { weight: 700, cls: "mm-hand mm-red", lean: .6 }));
+    o += only("tr", HW(124, ly(23), "Soğanlı mı soğansız mı?", 22) + HW(42, ly(24), "O karar senin. Ama taze ekmek", 22) + HW(42, ly(25), "olmadan menemen olmaz!", 22));
+    o += only("en", HW(130, ly(23), "Onion or no onion?", 22) + HW(42, ly(24), "Your call. But never without", 22) + HW(42, ly(25), "fresh bread for dipping!", 22));
+
+    o += only("tr blank", '<text x="622" y="830" font-size="34" class="mm-brush mm-red" text-anchor="middle" transform="rotate(-6 622 818)">Afiyetle</text>');
+    o += only("en", '<text x="622" y="830" font-size="34" class="mm-brush mm-red" text-anchor="middle" transform="rotate(-6 622 818)">Enjoy!</text>');
+
+    o += only("tr blank", '<text x="50" y="985" font-size="15" class="mm-hand">ilk denediğim gün:  ____ / ____ / ________</text><text x="556" y="985" font-size="15" class="mm-hand" text-anchor="end">puanım:</text>');
+    o += only("en", '<text x="50" y="985" font-size="15" class="mm-hand">first made on:  ____ / ____ / ________</text><text x="556" y="985" font-size="15" class="mm-hand" text-anchor="end">my rating:</text>');
+
     return { paint: s, over: o };
   }
 
   // image: the painting baked to a bitmap (scripts in exports/ regenerate it). Pages then only draw text live,
   // which keeps several copies on one screen cheap. Without it, the painting is drawn live.
-  var SPREADS = { menemen: { draw: menemen, title: "Menemen", image: "assets/spreads/menemen-paint.webp" } };
+  var SPREADS = { menemen: { draw: menemenPage, title: "Menemen", pages: 1, image: "assets/spreads/menemen-paint.webp" } };
   var cache = {};
   var api = { base: "" };
 
   function parts(id) { return cache[id] || (cache[id] = SPREADS[id].draw()); }
   function svg(id, lang, view, inner) {
-    var vb = view === "left" ? "0 0 700 1000" : view === "right" ? "700 0 700 1000" : "0 0 1400 1000";
+    var vb = SPREADS[id].pages === 1 ? "0 0 700 1000" : view === "left" ? "0 0 700 1000" : view === "right" ? "700 0 700 1000" : "0 0 1400 1000";
     return '<svg class="mm-spread mm-' + (view || "both") + '" data-lang="' + (lang || "tr") + '" viewBox="' + vb + '" role="img" aria-label="' +
       SPREADS[id].title + ' tarif sayfası" preserveAspectRatio="xMidYMid meet">' + inner + "</svg>";
   }
@@ -435,12 +417,14 @@
     if (!sp) return "";
     install();
     var p = parts(id);
-    var paint = sp.image && !api.live ? '<image href="' + api.base + sp.image + '" width="1400" height="1000" preserveAspectRatio="none"/>' : p.paint;
+    var w = sp.pages === 1 ? 700 : 1400;
+    var paint = sp.image && !api.live ? '<image href="' + api.base + sp.image + '" width="' + w + '" height="1000" preserveAspectRatio="none"/>' : p.paint;
     return svg(id, lang, view, paint + p.over);
   };
   // the painting alone, live, for baking the image
   api.renderPaint = function (id) { install(); return svg(id, "tr", "both", parts(id).paint); };
   api.install = install;
   api.has = function (id) { return !!SPREADS[id]; };
+  api.pages = function (id) { return SPREADS[id] ? SPREADS[id].pages || 2 : 0; };
   window.TariifSpreads = api;
 })();

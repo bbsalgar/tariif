@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Menemen tarif sayfası</title>
+<title>Tutam No. 01 Menemen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@400..700&family=Kalam:wght@400;700&family=Young+Serif&display=swap">
@@ -30,6 +30,7 @@
     background: #FBF8F1;
   }
   .notebook svg.mm-left, .notebook svg.mm-right { max-width: 640px; }
+  .notebook svg[viewBox="0 0 700 1000"] { max-width: 760px; }
   .about { max-width: 62ch; margin: var(--s-6) auto 0; color: var(--ink-soft); display: grid; gap: var(--s-3); }
   .about p { margin: 0; }
   .about b { color: var(--pen); font-weight: 600; }
@@ -38,7 +39,7 @@
 <body>
 <div class="desk">
   <header class="desk-top">
-    <a class="back" href="../index.html">← tariif</a>
+    <a class="back" href="../index.html">← tutam</a>
     <h1 class="desk-title">No. 01 · Menemen</h1>
     <div class="controls">
       <div class="seg" role="group" aria-label="Sayfa dili" id="langSeg">
@@ -56,9 +57,9 @@
   <main class="notebook" id="notebook"></main>
 
   <section class="about">
-    <p><b>İki sayfalık açılım.</b> Solda bakır sahanda menemen, yanında ekmek ve ince belli bardakta çay. Sağda her malzeme ayrı ayrı çizilmiş, altında el yazısıyla yapılışı.</p>
-    <p><b>Üç hali var.</b> Türkçe, İngilizce ya da boş. Boş sayfada çizimler kalır; malzeme ve tarif satırları senin el yazın için çizgili bırakılır.</p>
-    <p><b>Prototip.</b> Bu sayfa kodla boyandı. Gerçek defterde aynı düzen Procreate'te elle çizilecek.</p>
+    <p><b>Kuru boya, çizgili kağıt.</b> Tabelada tarifin adı, köşede maydanoz, yanında çaydanlık ve ince belli bardak. Ortada bakır sahanda menemen, altta domatesler, sepette yumurtalar, sivri biberler ve pul biber kavanozu.</p>
+    <p><b>Üç hali var.</b> Türkçe, İngilizce ya da boş. Boş sayfada çizimler ve kırmızı tireler kalır; satırlar senin el yazın için boş bırakılır. En alttaki şeride ilk denediğin günü ve puanını yazabilirsin.</p>
+    <p><b>Prototip.</b> Bu sayfa kodla çizildi. Gerçek defterde aynı düzen elle, Procreate'te çizilecek.</p>
   </section>
 </div>
 
@@ -68,6 +69,7 @@
   TariifSpreads.base = "../";   // the baked painting lives in ../assets/spreads
   var lang = "tr";
   var view = window.matchMedia("(max-width: 760px)").matches ? "pages" : "both";
+  if (TariifSpreads.pages("menemen") === 1) { view = "both"; document.getElementById("viewSeg").hidden = true; }
   var book = document.getElementById("notebook");
 
   function draw() {

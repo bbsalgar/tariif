@@ -1,4 +1,7 @@
-# tariif — el çizimi tarif defteri
+# Tutam
+
+**Tutam**, **Manyetik Mürekkep** stüdyosunun el çizimi, kişiselleştirilebilir tarif defteri.
+Manyetik Mürekkep sanatçı ve Instagram hesabının adı; Tutam bu stüdyonun defter ürünü ("Tutam · bir Manyetik Mürekkep defteri").
 
 Kişiselleştirilebilir tarif defteri sitesinin ilk prototipi. Ziyaretçi elle çizilmiş tarif sayfalarını seçer, her sayfa için **TR / EN / Boş** dilini belirler, kapak rengini, kapak yazısını ve cildi seçer, sayfa sırasını düzenler.
 
@@ -22,13 +25,13 @@ assets/app.js       tarif verisi, defter oluşturucu, iki sayfalık önizleme
 
 ## Boyalı tarif sayfaları (spreads)
 
-İlk tam sayfa örneği: **No. 01 Menemen** (`recipes/menemen.html`). İki sayfalık açılım, TR / EN / Boş halleriyle.
+İlk tam sayfa örneği: **No. 01 Menemen** (`recipes/menemen.html`). Tek sayfa, çizgili kağıtta kuru boya hissi; TR / EN / Boş halleriyle.
 
 ```
-assets/spreads/menemen.js          sayfanın çizimi (SVG suluboya + kalem) ve el yazısı metinler
+assets/spreads/menemen.js          sayfanın çizimi (SVG kuru boya + kalem) ve el yazısı metinler
 assets/spreads/menemen-paint.webp  boya katmanının hazır görseli; site bunun üstüne metni canlı yazar
 exports/bake-spread.js             boya katmanını görsele çevirir, baskı ve Instagram görsellerini üretir
-exports/menemen/                   2800×2000 açılımlar (TR/EN/Boş) ve 1080×1350 Instagram postları
+exports/menemen/                   1400×2000 sayfa (TR/EN/Boş) ve 1080×1350 Instagram postları (TR/EN)
 ```
 
 Çizimi değiştirdikten sonra görselleri yeniden üret:
@@ -39,7 +42,7 @@ node exports/bake-spread.js menemen
 ```
 
 Procreate sayfaları hazır olduğunda `menemen-paint.webp` yerine kendi dışa aktarımını koyman yeterli
-(1400×1000 oranında, 2800×2000 önerilir); metin katmanı üstünde çalışmaya devam eder.
+(tek sayfa için 700×1000 oranında, 1400×2000 önerilir); metin katmanı üstünde çalışmaya devam eder.
 
 ## Sonraki adımlar
 

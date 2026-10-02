@@ -580,6 +580,8 @@ main > section.scene { max-width: none; padding-inline: 0; }
 .spread--painted .mm-spread { display: block; width: 100%; height: auto; }
 .spread--painted .mm-left, .spread--painted .mm-right { display: none; }
 .spread-foot { gap: var(--s-3); }
+.spread.spread--single { display: flex; justify-content: center; background: none; box-shadow: none; overflow: visible; }
+.spread--single .mm-spread { width: auto; height: min(74vh, 900px); max-width: 100%; box-shadow: var(--shadow-sheet); }
 
 /* watercolour paintings: each pigment layer glazes over the one below it */
 .art { isolation: isolate; overflow: visible; }
@@ -912,7 +914,8 @@ ol.hand-list li::before {
   .add-btn { margin-left: 0; }
   .card-meta { flex-direction: column; gap: .2rem; }
   .spread-dialog { padding: var(--s-3); }
-  .spread--painted .mm-both { display: none; }
+  .spread--painted:not(.spread--single) .mm-both { display: none; }
+  .spread--single .mm-spread { width: 100%; height: auto; }
   .spread--painted .mm-left, .spread--painted .mm-right { display: block; }
   .spread--painted .mm-right { border-top: 1px solid var(--rule); }
   .spread { grid-template-columns: minmax(0, 1fr); }
