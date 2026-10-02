@@ -7,17 +7,53 @@
 <meta name="description" content="Elle çizilmiş tarif sayfalarını seç, kendi tarif defterini oluştur.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Caveat:wght@400..700&family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@400..700&family=Kalam:wght@400;700&family=Young+Serif&display=swap">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+
+<!-- watercolour + pen filters shared by every painting on the page -->
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="wc1" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" result="edgeNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="edgeNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" result="bloomNoise"/>
+    <feColorMatrix in="bloomNoise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.5 0.1" result="bloom"/>
+    <feComposite in="shape" in2="bloom" operator="in" result="wash"/>
+    <feMorphology in="shape" operator="erode" radius="1.1" result="inner"/>
+    <feComposite in="shape" in2="inner" operator="out" result="rim"/>
+    <feGaussianBlur in="rim" stdDeviation="0.45" result="rimSoft"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="1" seed="2" result="grainNoise"/>
+    <feColorMatrix in="grainNoise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.45 1.1" result="grain"/>
+    <feMerge result="paint"><feMergeNode in="wash"/><feMergeNode in="rimSoft"/></feMerge>
+    <feComposite in="paint" in2="grain" operator="in"/>
+  </filter>
+  <filter id="wc2" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="21" result="edgeNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="edgeNoise" scale="5" xChannelSelector="G" yChannelSelector="R" result="shape"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="2" seed="37" result="bloomNoise"/>
+    <feColorMatrix in="bloomNoise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 0.15" result="bloom"/>
+    <feComposite in="shape" in2="bloom" operator="in" result="wash"/>
+    <feMorphology in="shape" operator="erode" radius="1" result="inner"/>
+    <feComposite in="shape" in2="inner" operator="out" result="rim"/>
+    <feGaussianBlur in="rim" stdDeviation="0.4" result="rimSoft"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="9" result="grainNoise"/>
+    <feColorMatrix in="grainNoise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.45 1.1" result="grain"/>
+    <feMerge result="paint"><feMergeNode in="wash"/><feMergeNode in="rimSoft"/></feMerge>
+    <feComposite in="paint" in2="grain" operator="in"/>
+  </filter>
+  <filter id="pen" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="5" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <div class="proto-strip">Prototip · Sayfalardaki çizimler yer tutucu, gerçek sayfalar Procreate'ten gelecek</div>
 
 <header class="top">
   <a class="logo" href="#" aria-label="tariif ana sayfa">
     <span class="logo-word">tariif</span>
-    <span class="logo-sub">el çizimi tarif defteri</span>
+    <span class="logo-sub">suluboya tarif defteri</span>
   </a>
   <nav class="nav" aria-label="Ana menü">
     <a href="#sayfalar">Sayfalar</a>
@@ -31,7 +67,7 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">Procreate'te çizildi · el yazısıyla yazıldı</p>
+      <p class="eyebrow">kalemle çizildi, suluboyayla boyandı, el yazısıyla yazıldı</p>
       <h1>Sayfa sayfa,<br><span class="h1-hand">senin</span> defterin.</h1>
       <p class="lede">Her tarif ayrı bir sayfa olarak çiziliyor. Beğendiklerini seç, Türkçe ya da İngilizce al, istersen tarif kısmını boş bırak ve kendi el yazınla doldur.</p>
       <div class="hero-cta">
@@ -41,6 +77,7 @@
     </div>
 
     <div class="hero-stage" aria-hidden="true">
+      <svg class="hero-wash" viewBox="0 0 400 360" preserveAspectRatio="none"><g filter="url(#wc1)"><path d="M70 60c60-50 190-40 260 0s70 150 30 210-170 90-250 50S-20 230 20 150s20-60 50-90z"/></g><g filter="url(#wc2)"><circle class="dab-y" cx="330" cy="70" r="34"/><circle class="dab-g" cx="60" cy="300" r="26"/></g></svg>
       <div class="fan" id="heroFan"></div>
       <p class="note note-a">bu sayfayı boş<br>bırakabilirsin</p>
       <svg class="arrow arrow-a" viewBox="0 0 90 60"><path d="M4 8c22 2 52 10 74 40m0 0-14-4m14 4 1-14"/></svg>
@@ -73,12 +110,12 @@
       <li>
         <span class="step-no">3</span>
         <h3>Kapağını giydir</h3>
-        <p>Üç mürekkep renginden birini seç, kapağa adını ya da defterin adını yazdıralım.</p>
+        <p>Dört bez kapak renginden birini seç, kapak etiketine adını ya da defterin adını yazdıralım.</p>
       </li>
       <li>
         <span class="step-no">4</span>
         <h3>Basılsın, ciltlensin</h3>
-        <p>Kalın, mat kağıda basılır; spiral ya da iplik dikiş ciltle kapına gelir.</p>
+        <p>Suluboya dokusunu taşıyan kalın, mat kağıda basılır; spiral ya da iplik dikiş ciltle kapına gelir.</p>
       </li>
     </ol>
   </section>
@@ -149,7 +186,7 @@
   <section class="studio">
     <div class="section-head">
       <h2>Çizim masasından</h2>
-      <p>Her sayfa önce Instagram'da eskiz olarak doğuyor. Sıradaki tarifi takipçiler seçiyor.</p>
+      <p>Her sayfa üç aşamada doğuyor: kalemle eskiz, suluboya, son dokunuşlar. Hepsi önce Instagram'da paylaşılıyor, sıradaki tarifi takipçiler seçiyor.</p>
     </div>
     <div class="studio-grid" id="studioGrid"></div>
     <a class="btn btn-line" href="https://instagram.com/" target="_blank" rel="noopener">Instagram'da takip et</a>
@@ -165,7 +202,7 @@
 
 <!-- mobile bar -->
 <a class="mobile-bar" href="#defterim">
-  <span><b data-count>0</b> sayfa · <span id="mobileTotal">₺0</span></span>
+  <span><b data-count>0</b> sayfa · <span id="mobileTotal">0 TL</span></span>
   <span>Defterim →</span>
 </a>
 

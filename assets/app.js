@@ -2,83 +2,123 @@
   "use strict";
 
   /* ------------------------------------------------------------------
-     Risograph placeholder art. Each motif is printed in three inks:
-     yellow, blue, then an off-register pink plate, with ink linework
-     on top. Swap these for the real Procreate exports later
+     Watercolour placeholder art: pigment glazes (SVG filters #wc1/#wc2
+     in index.html give them soft, pooled edges and paper grain) under
+     fine-liner linework. Swap these for the real Procreate exports later
      (see README: "Kendi çizimlerini eklemek").
   ------------------------------------------------------------------ */
-  function petals(n) {
+  // W: one watercolour glaze in a single pigment. P: paper left white. PEN: fine-liner linework.
+  function W(pigment, inner, f, extra) {
+    return '<g class="wash ' + pigment + (extra ? " " + extra : "") + '" filter="url(#' + (f || "wc1") + ')">' + inner + "</g>";
+  }
+  function P(inner) { return '<g class="paper" filter="url(#wc2)">' + inner + "</g>"; }
+  function PEN(inner) { return '<g class="pen" filter="url(#pen)">' + inner + "</g>"; }
+  function dots(pts, r) {
+    return pts.map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + r + '"/>'; }).join("");
+  }
+  function inkDots(pts) {
+    return '<path class="dot" d="' + pts.map(function (p) { return "M" + p[0] + " " + p[1] + "h.01"; }).join("") + '"/>';
+  }
+  function grid(x0, y0, cols, rows, step, r) {
+    var pts = [];
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) pts.push([x0 + x * step + (y % 2) * step / 2, y0 + y * step * 0.85]);
+    return dots(pts, r);
+  }
+  function petals(n, cy, rx, ry, offset) {
     var out = "";
     for (var i = 0; i < n; i++) {
-      out += '<ellipse class="b" cx="60" cy="38" rx="10" ry="24" transform="rotate(' + (i * 360 / n) + ' 60 62)" opacity=".75"/>';
+      out += '<ellipse cx="60" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" transform="rotate(' + (offset + i * 360 / n) + ' 60 62)"/>';
     }
     return out;
   }
-  function dots(cls, pts, r) {
-    return pts.map(function (p) { return '<circle class="' + cls + '" cx="' + p[0] + '" cy="' + p[1] + '" r="' + r + '"/>'; }).join("");
-  }
-  function grid(cls, x0, y0, cols, rows, step, r) {
-    var pts = [];
-    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) pts.push([x0 + x * step + (y % 2) * step / 2, y0 + y * step * 0.85]);
-    return dots(cls, pts, r);
-  }
+
+  var HEART = '<path d="M58 64c-10-8-14-14-8-18 4-3 8 0 8 3 0-3 4-6 8-3 6 4 2 10-8 18z"/>';
 
   var ART = {
-    pan:
-      '<circle class="b" cx="54" cy="64" r="38"/><rect class="b" x="86" y="58" width="32" height="11" rx="5.5"/>' +
-      '<g class="plate-p">' + dots("p", [[38, 50], [68, 46], [72, 80], [40, 82], [56, 88]], 6.5) + '</g>' +
-      '<ellipse class="w" cx="48" cy="64" rx="14" ry="12"/><ellipse class="w" cx="68" cy="62" rx="12" ry="11"/>' +
-      '<circle class="y" cx="48" cy="64" r="7.5"/><circle class="y" cx="68" cy="62" r="6.5"/>' +
-      '<path class="ln" d="M30 66l2 3M78 50l2-3M60 80l3 1M36 46l3-1"/>',
-    bowl:
-      '<circle class="y" cx="80" cy="34" r="22"/>' +
-      '<path class="b" d="M14 62h92c0 26-20 42-46 42S14 88 14 62z"/>' +
-      '<g class="plate-p"><ellipse class="p" cx="60" cy="62" rx="46" ry="9"/></g>' +
-      '<circle class="y" cx="86" cy="60" r="7"/>' +
-      '<path class="ln" d="M44 48c-6-6 6-10 0-18M60 44c-6-6 6-10 0-18M76 48c-6-6 6-10 0-16M46 61l2 2M58 63l2-1M70 60l1 2"/>',
-    eggplant:
-      '<ellipse class="b" cx="58" cy="70" rx="46" ry="22" transform="rotate(-8 58 70)"/>' +
-      '<g class="plate-p"><ellipse class="p" cx="58" cy="70" rx="46" ry="22" transform="rotate(-8 58 70)"/></g>' +
-      '<ellipse class="y" cx="56" cy="62" rx="32" ry="8" transform="rotate(-8 56 62)"/>' +
-      dots("p", [[46, 62], [60, 59], [72, 58]], 3.4) +
-      '<path class="ln" d="M100 56c6-4 10-10 10-18M95 51l9 10"/>',
-    dumplings:
-      '<circle class="ln" cx="60" cy="62" r="46"/>' +
-      '<ellipse class="w" cx="60" cy="62" rx="36" ry="30"/>' +
-      grid("y", 36, 44, 5, 5, 11, 4.6) +
-      '<g class="plate-p"><path class="pl" d="M30 54c8 6 14-6 22 0s14-6 22 0 14-6 20 0M32 76c8 6 14-6 22 0s14-6 22 0 12-6 18 0"/></g>' +
-      dots("b", [[40, 40], [80, 42], [92, 70], [30, 70], [62, 92]], 1.8),
-    artichoke:
-      '<circle class="y" cx="60" cy="62" r="42"/>' + petals(8) +
-      '<g class="plate-p"><circle class="p" cx="60" cy="62" r="14"/></g>' +
-      '<path class="ln" d="M18 100l10-10M24 104l6-12M100 18l-8 12M106 26l-12 6"/>',
-    bread:
-      '<g class="plate-p"><ellipse class="p" cx="60" cy="96" rx="50" ry="8"/></g>' +
-      '<ellipse class="y" cx="34" cy="78" rx="21" ry="16"/><ellipse class="y" cx="86" cy="78" rx="21" ry="16"/><ellipse class="y" cx="60" cy="56" rx="23" ry="18"/>' +
-      dots("b", [[28, 70], [36, 66], [42, 72], [80, 70], [88, 66], [94, 72], [52, 48], [60, 44], [68, 49], [58, 52]], 1.6) +
-      '<path class="ln" d="M20 82c8 4 18 4 26 0M72 82c8 4 18 4 26 0M44 62c8 4 24 4 32 0"/>',
-    slice:
-      '<ellipse class="b" cx="60" cy="94" rx="52" ry="9"/>' +
-      '<rect class="y" x="22" y="50" width="76" height="40" rx="3"/>' +
-      '<g class="plate-p"><rect class="p" x="22" y="44" width="76" height="10" rx="3"/>' +
-      '<path class="p" d="M30 52v9a3 3 0 0 0 6 0v-9zM58 52v13a3 3 0 0 0 6 0V52zM82 52v7a3 3 0 0 0 6 0v-7z"/></g>' +
-      '<path class="ln" d="M34 46l2 1M50 45l1 2M70 46l2-1M88 45l1 2M22 70h76"/>',
-    ramekin:
-      '<path class="b" d="M22 58h76l-7 36a6 6 0 0 1-6 5H35a6 6 0 0 1-6-5z"/>' +
-      '<ellipse class="y" cx="60" cy="58" rx="38" ry="10"/>' +
-      '<g class="plate-p"><ellipse class="p" cx="50" cy="57" rx="10" ry="4"/><ellipse class="p" cx="72" cy="60" rx="8" ry="3"/><ellipse class="p" cx="62" cy="54" rx="5" ry="2"/></g>' +
-      '<path class="ln" d="M30 76h60M32 86h56M40 58l1 1M80 56l1 1M58 62l1 1"/>',
-    glass:
-      '<circle class="y" cx="86" cy="32" r="17"/><circle class="w" cx="86" cy="32" r="12"/><circle class="y" cx="86" cy="32" r="10" opacity=".55"/>' +
-      '<path class="b" d="M34 30h48l-6 72H40z" opacity=".7"/>' +
-      '<rect class="w" x="46" y="54" width="12" height="12" rx="2" transform="rotate(12 52 60)" opacity=".7"/><rect class="w" x="60" y="70" width="11" height="11" rx="2" transform="rotate(-10 65 75)" opacity=".7"/>' +
-      '<g class="plate-p"><rect class="p" x="62" y="10" width="5" height="54" rx="2.5" transform="rotate(14 64 37)"/></g>' +
-      '<path class="ln" d="M86 21v22M75 32h22M36 46h44"/>',
-    frame:
-      '<rect class="y" x="16" y="24" width="88" height="72" rx="2" transform="rotate(-4 60 60)"/>' +
-      '<rect class="w" x="23" y="30" width="74" height="52" transform="rotate(-4 60 60)"/>' +
-      '<g class="plate-p"><rect class="p" x="44" y="14" width="32" height="12" transform="rotate(6 60 20)" opacity=".85"/></g>' +
-      '<path class="ln" d="M60 66c-10-8-14-14-8-18 4-3 8 0 8 3 0-3 4-6 8-3 6 4 2 10-8 18z"/>'
+    pan: // menemen in a copper sahan
+      W("terra", '<circle cx="60" cy="64" r="40"/><ellipse cx="15" cy="64" rx="9" ry="5"/><ellipse cx="105" cy="64" rx="9" ry="5"/>', "wc1", "lt") +
+      W("red", '<circle cx="60" cy="64" r="33"/>', "wc2") +
+      W("orange", '<circle cx="68" cy="54" r="13"/><circle cx="46" cy="78" r="10"/>', "wc1", "lt") +
+      P('<ellipse cx="50" cy="60" rx="14" ry="12"/><ellipse cx="72" cy="71" rx="13" ry="11"/>') +
+      W("yellow", '<circle cx="50" cy="60" r="6.5"/><circle cx="72" cy="71" r="6"/>', "wc2") +
+      W("green", '<ellipse cx="42" cy="80" rx="9" ry="3.2" transform="rotate(-20 42 80)"/><ellipse cx="82" cy="50" rx="8" ry="3" transform="rotate(25 82 50)"/><ellipse cx="64" cy="43" rx="6" ry="2.6" transform="rotate(-8 64 43)"/>', "wc1") +
+      PEN('<circle cx="60" cy="64" r="40"/><circle cx="60" cy="64" r="34.5"/><circle cx="50" cy="60" r="6.5"/><circle cx="72" cy="71" r="6"/><path d="M6 61c2-2 6-2 8 0M106 61c2-2 6-2 8 0"/>' +
+        inkDots([[38, 64], [62, 50], [86, 64], [58, 88], [44, 48], [80, 82]])),
+
+    bowl: // mercimek in an İznik bowl
+      W("blue", '<path d="M14 60h92c0 26-20 42-46 42S14 86 14 60z"/>', "wc1") +
+      P('<path d="M21 76c12 7 66 7 78 0l-3 8c-14 6-58 6-72 0z"/>') +
+      W("blue", dots([[34, 81], [47, 84], [60, 85], [73, 84], [86, 81]], 2.4), "wc2") +
+      P('<ellipse cx="60" cy="60" rx="46" ry="10"/>') +
+      W("orange", '<ellipse cx="60" cy="60" rx="46" ry="10"/>', "wc2") +
+      W("yellow", '<path d="M78 58a12 12 0 0 1 24 0z"/>', "wc1") +
+      W("green", '<ellipse cx="44" cy="58" rx="6" ry="2.6" transform="rotate(-20 44 58)"/><ellipse cx="53" cy="62" rx="6" ry="2.6" transform="rotate(30 53 62)"/>', "wc2") +
+      W("red", dots([[38, 62], [64, 57], [70, 62], [58, 64]], 1.3), "wc1") +
+      PEN('<path d="M14 60h92c0 26-20 42-46 42S14 86 14 60z"/><ellipse cx="60" cy="60" rx="46" ry="10"/><path d="M46 44c-5-5 5-9 0-16M62 40c-5-5 5-9 0-16M76 44c-4-4 4-7 0-12"/><path d="M78 58a12 12 0 0 1 24 0M90 58V47M90 58l-8-7M90 58l8-7"/><path d="M42 102h36"/>'),
+
+    eggplant: // karnıyarık
+      W("blue", '<ellipse cx="58" cy="94" rx="52" ry="8"/>', "wc1", "lt") +
+      W("purple", '<ellipse cx="56" cy="70" rx="44" ry="18" transform="rotate(-10 56 70)"/>', "wc1") +
+      W("purple", '<ellipse cx="60" cy="77" rx="34" ry="8" transform="rotate(-10 60 77)"/>', "wc2", "lt") +
+      W("brown", '<ellipse cx="54" cy="62" rx="30" ry="7" transform="rotate(-10 54 62)"/>', "wc2") +
+      W("red", '<circle cx="40" cy="62" r="5"/><circle cx="66" cy="57" r="5"/>', "wc1") +
+      W("green", '<ellipse cx="53" cy="58" rx="14" ry="2.6" transform="rotate(-10 53 58)"/><path d="M96 56c6-2 10-8 12-16l4 2c-2 8-6 14-12 18z"/><path d="M90 53c4-6 12-6 14 2-6 4-10 4-14-2z"/>', "wc2") +
+      PEN('<ellipse cx="56" cy="70" rx="44" ry="18" transform="rotate(-10 56 70)"/><path d="M26 66c18-6 40-10 58-12"/><circle cx="40" cy="62" r="5"/><circle cx="66" cy="57" r="5"/><path d="M98 54c6-3 9-9 11-16"/>'),
+
+    dumplings: // mantı with garlic yogurt and pepper butter
+      W("blue", '<circle cx="60" cy="62" r="48"/>', "wc1", "lt") +
+      P('<ellipse cx="60" cy="62" rx="38" ry="32"/>') +
+      W("cream", '<ellipse cx="60" cy="62" rx="36" ry="30"/>', "wc2", "lt") +
+      W("ochre", grid(38, 46, 5, 5, 10.5, 4.3), "wc1", "lt") +
+      W("s-red", '<path d="M32 52c8 6 14-6 22 0s14-6 22 0 12-6 18 0M34 74c8 6 14-6 22 0s14-6 22 0 10-6 16 0"/>', "wc2") +
+      W("green", dots([[44, 42], [80, 44], [90, 70], [32, 68], [62, 90]], 1.8), "wc1") +
+      PEN('<circle cx="60" cy="62" r="48"/><circle cx="60" cy="62" r="41"/><path d="M46 50l2 2M60 48l2 2M72 53l2 2M50 64l2 2M66 66l2 2M56 78l2 2"/>'),
+
+    artichoke: // zeytinyağlı enginar with lemon and dill
+      W("sage", petals(8, 37, 11, 25, 0), "wc1") +
+      W("green", petals(8, 44, 8, 18, 22.5), "wc2") +
+      W("yellow", '<circle cx="60" cy="62" r="11"/>', "wc1", "lt") +
+      W("yellow", '<circle cx="100" cy="100" r="12"/>', "wc2") +
+      PEN(petals(8, 44, 8, 18, 22.5) + '<circle cx="60" cy="62" r="11"/><path d="M12 102l10-10M16 108l6-12M24 96l-8-2"/><circle cx="100" cy="100" r="12"/><path d="M100 89v22M89 100h22"/>'),
+
+    bread: // poğaça on a blue plate
+      W("blue", '<ellipse cx="60" cy="96" rx="52" ry="10"/>', "wc1", "lt") +
+      W("cream", '<ellipse cx="34" cy="80" rx="22" ry="16"/><ellipse cx="86" cy="80" rx="22" ry="16"/><ellipse cx="60" cy="58" rx="24" ry="18"/>', "wc2") +
+      W("ochre", '<ellipse cx="34" cy="74" rx="15" ry="8"/><ellipse cx="86" cy="74" rx="15" ry="8"/><ellipse cx="60" cy="51" rx="16" ry="9"/>', "wc1") +
+      PEN('<path d="M12 84c0-12 10-20 22-20s22 8 22 20M64 84c0-12 10-20 22-20s22 8 22 20M36 62c0-14 11-22 24-22s24 8 24 22"/><path d="M12 84c8 4 36 4 44 0M64 84c8 4 36 4 44 0"/>' +
+        inkDots([[28, 70], [36, 67], [42, 72], [80, 70], [88, 67], [94, 72], [52, 48], [60, 45], [68, 49], [58, 53]])),
+
+    slice: // revani with pistachio
+      W("blue", '<ellipse cx="60" cy="94" rx="52" ry="9"/>', "wc1", "lt") +
+      W("ochre", '<rect x="22" y="48" width="76" height="40" rx="2"/>', "wc2", "lt") +
+      W("yellow", '<rect x="27" y="58" width="66" height="26"/>', "wc1", "lt") +
+      W("orange", '<rect x="22" y="44" width="76" height="9" rx="2"/>', "wc1") +
+      W("green", dots([[36, 44], [54, 43], [74, 44], [88, 43]], 2), "wc2") +
+      PEN('<path d="M22 48v40h76V48M22 46c20-3 56-3 76 0M22 53h76M34 53v7M60 53v11M84 53v6"/>' +
+        inkDots([[30, 66], [44, 72], [58, 64], [72, 76], [86, 68], [40, 82], [66, 84]])),
+
+    ramekin: // fırın sütlaç in a clay güveç
+      W("terra", '<path d="M22 58h76l-7 36a6 6 0 0 1-6 5H35a6 6 0 0 1-6-5z"/>', "wc1") +
+      W("brown", '<path d="M24 64h72l-1 6H25z"/>', "wc2", "lt") +
+      W("cream", '<ellipse cx="60" cy="58" rx="38" ry="10"/>', "wc2") +
+      W("brown", '<ellipse cx="50" cy="57" rx="10" ry="4"/><ellipse cx="72" cy="60" rx="8" ry="3"/><ellipse cx="63" cy="54" rx="5" ry="2"/>', "wc1") +
+      PEN('<path d="M22 58l7 36a6 6 0 0 0 6 5h50a6 6 0 0 0 6-5l7-36"/><ellipse cx="60" cy="58" rx="38" ry="10"/><path d="M26 70c20 4 48 4 68 0"/>' +
+        inkDots([[42, 60], [80, 57], [56, 62], [68, 55]])),
+
+    glass: // lemonade with mint
+      W("yellow", '<path d="M37 44h46l-5 56H42z"/>', "wc1", "lt") +
+      W("blue", '<path d="M40 50l2 46h4l-2-46z"/>', "wc2", "lt") +
+      W("yellow", '<circle cx="88" cy="32" r="16"/><circle cx="58" cy="72" r="9"/>', "wc2") +
+      W("green", '<ellipse cx="50" cy="38" rx="9" ry="3.6" transform="rotate(-30 50 38)"/><ellipse cx="60" cy="34" rx="9" ry="3.6" transform="rotate(20 60 34)"/>', "wc1") +
+      PEN('<path d="M34 30h52l-7 72H41z"/><path d="M37 44h46"/><circle cx="88" cy="32" r="16"/><circle cx="88" cy="32" r="12"/><path d="M88 20v24M76 32h24M80 24l16 16M96 24L80 40"/><circle cx="58" cy="72" r="9"/><rect x="62" y="52" width="11" height="11" rx="2" transform="rotate(12 67 57)"/><rect x="46" y="82" width="10" height="10" rx="2" transform="rotate(-10 51 87)"/><path d="M71 12l-8 60M75 13l-8 60"/>'),
+
+    frame: // the family-recipe page
+      W("grey", '<rect x="20" y="26" width="84" height="74" rx="2" transform="rotate(-4 62 63)"/>', "wc1", "lt") +
+      P('<rect x="16" y="22" width="84" height="74" rx="2" transform="rotate(-4 58 59)"/>') +
+      W("sage", '<rect x="24" y="29" width="68" height="50" transform="rotate(-4 58 54)"/>', "wc2", "lt") +
+      W("blue", '<rect x="42" y="12" width="34" height="12" transform="rotate(6 59 18)"/>', "wc1", "lt") +
+      W("red", HEART, "wc2") +
+      PEN('<rect x="16" y="22" width="84" height="74" rx="2" transform="rotate(-4 58 59)"/><rect x="24" y="29" width="68" height="50" transform="rotate(-4 58 54)"/>' + HEART + '<path d="M34 88c10-2 30-3 46-4"/>')
   };
 
   function art(motif) {
@@ -166,10 +206,10 @@
 
   var LANG_LABEL = { tr: "TR", en: "EN", blank: "Boş" };
   var COVERS = [
-    { id: "mavi", name: "Fırın mavisi", color: "var(--riso-blue)" },
-    { id: "pembe", name: "Nar pembesi", color: "var(--riso-pink)" },
-    { id: "hardal", name: "Hardal", color: "#C98B12" },
-    { id: "murekkep", name: "Mürekkep", color: "var(--ink)" }
+    { id: "mavi", name: "İznik mavisi", color: "var(--cobalt)" },
+    { id: "adacayi", name: "Adaçayı", color: "#6F8B62" },
+    { id: "nar", name: "Nar", color: "#9E2F37" },
+    { id: "keten", name: "Keten", color: "#DCCDB0" }
   ];
   var BINDINGS = [
     { id: "spiral", name: "Spiral", price: 390 },
@@ -207,7 +247,7 @@
     for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) return i;
     return -1;
   }
-  function tl(n) { return "₺" + n.toLocaleString("tr-TR"); }
+  function tl(n) { return n.toLocaleString("tr-TR") + " TL"; }
 
   /* ------------------------------------------------------------------
      Rendering
@@ -278,6 +318,7 @@
     var cp = $("#coverPreview");
     cp.style.setProperty("--cover", cover.color);
     cp.dataset.binding = binding.id;
+    cp.dataset.cover = cover.id;
     $("#coverName").textContent = state.name.trim() || "Benim Mutfağım";
     var nameInput = $("#nameInput");
     if (document.activeElement !== nameInput) nameInput.value = state.name;
@@ -450,8 +491,8 @@
   ------------------------------------------------------------------ */
   $("#heroFan").innerHTML = pageThumb(BY_ID.sutlac, "en") + pageThumb(BY_ID.menemen, "tr") + pageThumb(BY_ID.mercimek, "blank");
 
-  var posts = [["enginar", "sketch", "eskiz"], ["enginar", "flat", "renk"], ["enginar", "", "son hali"],
-               ["limonata", "sketch", "eskiz"], ["pogaca", "flat", "renk"], ["karniyarik", "", "son hali"]];
+  var posts = [["enginar", "sketch", "kalem"], ["enginar", "flat", "boya"], ["enginar", "", "son hali"],
+               ["limonata", "sketch", "kalem"], ["pogaca", "flat", "boya"], ["karniyarik", "", "son hali"]];
   $("#studioGrid").innerHTML = posts.map(function (p) {
     return '<div class="post ' + p[1] + '">' + art(BY_ID[p[0]].motif) + '<span class="post-tag">' + p[2] + '</span></div>';
   }).join("");
