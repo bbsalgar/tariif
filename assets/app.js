@@ -497,5 +497,170 @@
     return '<div class="post ' + p[1] + '">' + art(BY_ID[p[0]].motif) + '<span class="post-tag">' + p[2] + '</span></div>';
   }).join("");
 
+  /* ------------------------------------------------------------------
+     Scroll scenes. Each [data-scene] section is taller than the screen;
+     its progress p runs 0 → 1 while its sticky child is pinned.
+  ------------------------------------------------------------------ */
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function seg(p, a, b) { return clamp01((p - a) / (b - a)); }
+  function ease(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  // 1 · hero: cover swings open, the three pages fan out
+  var heroScene = $('[data-scene="hero"]');
+  var bookStage = $(".book-stage");
+  var fanPages = [].slice.call(document.querySelectorAll("#heroFan .page"));
+  var STACK = [[-5, 6, -2.5], [0, 0, 1], [5, -4, 3]];   // x px, y px, rotation
+  var FAN = [[-1, 16, -10], [0, -12, 1.5], [1, 12, 9]]; // x in stage units
+  function sceneHero(p) {
+    var open = ease(seg(p, .04, .42)), fan = ease(seg(p, .34, .85));
+    heroScene.style.setProperty("--open", open.toFixed(4));
+    heroScene.style.setProperty("--fan", fan.toFixed(4));
+    var unit = bookStage.clientWidth * .24;
+    fanPages.forEach(function (el, i) {
+      var s = STACK[i], f = FAN[i];
+      var x = s[0] + (f[0] * unit - s[0]) * fan, y = s[1] + (f[1] - s[1]) * fan, r = s[2] + (f[2] - s[2]) * fan;
+      el.style.transform = "translate(-50%, -50%) translate(" + x.toFixed(1) + "px, " + y.toFixed(1) + "px) rotate(" + r.toFixed(2) + "deg)";
+    });
+  }
+
+  // 2 · statement: words ink in one by one
+  var sayEl = $("#say"), sayWords = [];
+  (function splitWords() {
+    var frag = document.createDocumentFragment();
+    [].slice.call(sayEl.childNodes).forEach(function (node) {
+      var hand = node.nodeType === 1;
+      var target = hand ? document.createElement("em") : frag;
+      node.textContent.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { target.appendChild(document.createTextNode(part)); return; }
+        var w = document.createElement("span");
+        w.className = "w"; w.textContent = part;
+        target.appendChild(w); sayWords.push(w);
+      });
+      if (hand) frag.appendChild(target);
+    });
+    sayEl.textContent = "";
+    sayEl.appendChild(frag);
+  })();
+  function sceneSay(p) {
+    var lit = Math.floor(seg(p, .08, .8) * (sayWords.length + 1));
+    sayWords.forEach(function (w, i) { w.classList.toggle("on", i < lit); });
+  }
+
+  // 3 · build: pen lines draw, paint glazes in, handwriting appears
+  var buildPage = $("#buildPage");
+  buildPage.innerHTML =
+    '<div class="page-no"><span>No. 03</span><span>Çorba</span></div>' +
+    '<div class="page-art">' + art("bowl") + '</div>' +
+    '<div><div class="page-title build-title">Mercimek Çorbası</div>' +
+    '<ul class="hand-list build-list"><li>1 su bardağı kırmızı mercimek</li><li>1 kuru soğan, 1 havuç</li><li>1 yemek kaşığı salça</li><li>1 çay kaşığı kimyon</li></ul></div>';
+  var penLines = [].slice.call(buildPage.querySelectorAll(".pen > *:not(.dot)"));
+  var penDots = [].slice.call(buildPage.querySelectorAll(".pen > .dot"));
+  var paints = [].slice.call(buildPage.querySelectorAll(".wash, .paper"));
+  var buildTitle = buildPage.querySelector(".build-title");
+  var buildItems = [].slice.call(buildPage.querySelectorAll(".build-list li"));
+  var buildSteps = [].slice.call(document.querySelectorAll("#buildSteps li"));
+  penLines.forEach(function (el) { el.setAttribute("pathLength", "1"); el.style.strokeDasharray = "1 1"; });
+  function sceneBuild(p) {
+    var a = seg(p, .04, .34), b = seg(p, .36, .66), c = seg(p, .68, .94);
+    penLines.forEach(function (el) { el.style.strokeDashoffset = (1 - a).toFixed(4); });
+    penDots.forEach(function (el) { el.style.opacity = a > .9 ? 1 : 0; });
+    paints.forEach(function (el, k) {
+      var t = ease(seg(b, k / paints.length * .6, k / paints.length * .6 + .4));
+      var full = el.classList.contains("paper") ? 1 : el.classList.contains("lt") ? .45 : .85;
+      el.style.opacity = (t * full).toFixed(3);
+      el.style.transform = "scale(" + (.94 + .06 * t).toFixed(4) + ")";
+    });
+    buildTitle.style.clipPath = "inset(-20% " + ((1 - seg(c, 0, .45)) * 100).toFixed(1) + "% -20% 0)";
+    buildItems.forEach(function (li, i) {
+      var t = seg(c, .4 + i * .12, .55 + i * .12);
+      li.style.opacity = t.toFixed(3);
+      li.style.transform = "translateY(" + ((1 - t) * 8).toFixed(1) + "px)";
+    });
+    var active = p < .35 ? 0 : p < .67 ? 1 : 2;
+    buildSteps.forEach(function (li, i) {
+      li.classList.toggle("on", i === active);
+      li.style.setProperty("--sp", [a, b, c][i].toFixed(3));
+    });
+  }
+
+  // 4 · language: the same page as TR, EN, then blank
+  var LANG_DESC = [
+    "Tarif Türkçe, el yazısıyla. Malzemeler ev ölçüleriyle: su bardağı, yemek kaşığı.",
+    "Aynı sayfa İngilizce. Yurt dışındaki bir arkadaşa hediye için; ölçü notu da eklenir: 1 cup ≈ 200 ml.",
+    "Çizim kalır, tarif alanı senin. Annenin tarifini kendi el yazınla yaz."
+  ];
+  var rv = BY_ID.revani;
+  function langList(items) { return '<ul class="hand-list">' + items.slice(0, 4).map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>"; }
+  $("#langPage").innerHTML =
+    '<div class="page-no"><span>No. ' + rv.no + '</span><span class="page-badge" id="langBadge">TR</span></div>' +
+    '<div class="page-art">' + art(rv.motif) + '</div>' +
+    '<div class="lang-body">' +
+      '<div class="lang-state"><div class="page-title">' + rv.tr + '</div>' + langList(rv.ingTR) + '</div>' +
+      '<div class="lang-state"><div class="page-title" lang="en">' + rv.en + '</div>' + langList(rv.ingEN) + '</div>' +
+      '<div class="lang-state"><div class="page-title">' + rv.tr + '</div>' + lines(4) + '<p class="write-prompt">kendi tarifini yaz ✎</p></div>' +
+    '</div>';
+  var langStates = [].slice.call(document.querySelectorAll("#langPage .lang-state"));
+  var langDots = [].slice.call(document.querySelectorAll("#langDots span"));
+  var langNow = -1;
+  function sceneLang(p) {
+    var idx = p < .36 ? 0 : p < .7 ? 1 : 2;
+    if (idx === langNow) return;
+    langNow = idx;
+    langStates.forEach(function (el, i) { el.classList.toggle("on", i === idx); });
+    langDots.forEach(function (el, i) { el.classList.toggle("on", i === idx); });
+    $("#langBadge").textContent = LANG_LABEL[["tr", "en", "blank"][idx]];
+    $("#langDesc").textContent = LANG_DESC[idx];
+  }
+
+  // 5 · gallery: vertical scroll moves the row of pages sideways
+  var galleryScene = $('[data-scene="gallery"]'), track = $("#galleryTrack"), galleryDist = 0;
+  track.innerHTML = RECIPES.map(function (r) {
+    return '<button class="g-card" type="button" data-gopen="' + r.id + '" aria-label="' + r.tr + ' sayfasını büyüt">' +
+      pageThumb(r, r.langs[0]) + '<span class="g-name">' + r.tr + '</span><span class="mono">' + CATS[r.cat] + '</span></button>';
+  }).join("");
+  track.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-gopen]"); if (b) openSpread(b.dataset.gopen);
+  });
+  function sizeGallery() {
+    galleryDist = Math.max(0, track.scrollWidth - track.clientWidth);
+    if (!isStatic) galleryScene.style.height = (window.innerHeight + galleryDist * 1.1) + "px";
+  }
+  function sceneGallery(p) {
+    track.style.transform = "translateX(" + (-p * galleryDist).toFixed(1) + "px)";
+  }
+
+  // engine
+  var isStatic = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var SCENES = [
+    { el: heroScene, fn: sceneHero },
+    { el: $('[data-scene="say"]'), fn: sceneSay },
+    { el: $('[data-scene="build"]'), fn: sceneBuild },
+    { el: $('[data-scene="lang"]'), fn: sceneLang },
+    { el: galleryScene, fn: sceneGallery }
+  ];
+  var ticking = false;
+  function tick() {
+    ticking = false;
+    var vh = window.innerHeight;
+    SCENES.forEach(function (s) {
+      var r = s.el.getBoundingClientRect();
+      var total = s.el.offsetHeight - vh;
+      s.fn(total > 0 ? clamp01(-r.top / total) : 1);
+    });
+  }
+  function requestTick() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
+
+  if (isStatic) {
+    document.documentElement.classList.add("static");
+    SCENES.forEach(function (s) { s.fn(s.fn === sceneLang ? 0 : 1); });
+  } else {
+    window.addEventListener("scroll", requestTick, { passive: true });
+    window.addEventListener("resize", function () { sizeGallery(); requestTick(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sizeGallery(); requestTick(); });
+    sizeGallery();
+    tick();
+  }
+
   renderFilters(); renderCatalog(); renderBook();
 })();
